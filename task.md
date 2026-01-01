@@ -92,9 +92,7 @@ shipping method editable korte hobe
 ✅ already clone kore toiri hoise amon order theke abar clone korle problem kore
 
 
-**** device block ta kaj kortesena mone hochche
-**** IP address diye search enabled korte hobe
-**** IP address copy korar akta button dite hobe
+✅ device block ta kaj kortesena mone hochche
 **** pertial delivery status niye kaj korte hobe
 
 

@@ -132,8 +132,8 @@ class InitClass {
             "pixel_id" => '',
             "pixel_access_token" => '',
             "pixel_test_event_code" => '',
-            "validate_duplicate_order" => false,
-            "validate_checkout_form" => false,
+            "validate_duplicate_order" => true,
+            "validate_checkout_form" => true,
             "place_order_otp_verification" => false,
             
             "invoice_company_name" => $site_title,
@@ -141,35 +141,59 @@ class InitClass {
             "invoice_theme" => '3x3Paper',
             "invoice_email" => '',
             "invoice_phone" => '',
-            "invoice_print" => false,
+            "invoice_print" => true,
             "clear_data_when_deactivate_plugin" => false,
             "ip_block" => true,
             "phone_number_block" => true,
             "email_block" => true,
             "device_block" => true,
-            "daily_order_place_limit_per_customer" => 3,
-            "only_bangladeshi_ip" => false,
-            "courier_automation" => false,
-            "fraud_customer_checker" => false,
+            "daily_order_place_limit_per_customer" => 1,
+            "only_bangladeshi_ip" => true,
+            "courier_automation" => true,
+            "fraud_customer_checker" => true,
         ];
 
         // Fetch existing config from the database
         $option_key = __PREFIX . 'config'; // Ensure correct prefix
         $existing_config = get_option($option_key);
 
-        // Ensure existing config is an array (handles serialization issues)
-        if (!is_array($existing_config)) {
-            $existing_config = maybe_unserialize($existing_config);
+        // Handle different storage formats (JSON string, serialized, or array)
+        if (is_string($existing_config)) {
+            // Try JSON decode first
+            $decoded = json_decode($existing_config, true);
+            if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+                $existing_config = $decoded;
+            } else {
+                // Try unserialize
+                $unserialized = maybe_unserialize($existing_config);
+                $existing_config = is_array($unserialized) ? $unserialized : [];
+            }
         }
+
         if (!is_array($existing_config)) {
             $existing_config = []; // Fallback to empty array
         }
 
-        // Merge existing config with new fields (existing values are not changed)
-        $merged_config = array_merge($new_config, $existing_config);
+        // Only add keys that don't exist in existing config
+        $merged_config = [];
+        foreach ($new_config as $key => $default_value) {
+            // Check if key exists in existing config (even if value is empty/null/false)
+            if (array_key_exists($key, $existing_config)) {
+                $merged_config[$key] = $existing_config[$key]; // Keep existing value
+            } else {
+                $merged_config[$key] = $default_value; // Add new default
+            }
+        }
+
+        // Also preserve any extra keys in existing config that are not in new_config
+        foreach ($existing_config as $key => $value) {
+            if (!array_key_exists($key, $merged_config)) {
+                $merged_config[$key] = $value;
+            }
+        }
 
         // Compare before updating to prevent unnecessary writes
-        if (maybe_serialize($existing_config) !== maybe_serialize($merged_config)) {
+        if ($existing_config !== $merged_config) {
             update_option($option_key, $merged_config, true); // Update only if changes are needed
         }
     }

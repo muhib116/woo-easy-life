@@ -17,6 +17,13 @@ WooEasyLife is a comprehensive WordPress plugin that supercharges your WooCommer
 - **Quick Status Changes**: One-click status updates with customizable buttons
 - **Custom Checkout Fields Support**: Automatically captures and displays custom billing/shipping fields from checkout
 - **Flexible Note Management**: Save custom field values to courier, invoice, or customer notes with dropdown selection
+- **Order Cloning**: Clone existing orders (both WooCommerce and custom API formats) with complete product, shipping, and payment data
+- **Smart Shipping Method Lookup**: Automatically matches shipping methods by name and retrieves complete method details from zones
+- **Shipping Zone Support**: Properly handles shipping methods configured across multiple zones
+- **Complete Shipping Method Data**: Captures and preserves zone information, method titles, costs, and instance IDs
+- **Product Data Preservation**: Clone orders with complete product metadata including images, stock status, pricing variants, and SKUs
+- **Dual-Format Order Support**: Handles both legacy WooCommerce and new custom API order formats seamlessly
+- **Extended Product Information**: Cloned orders include 14 product fields for rich product metadata
 
 ### 🔒 Fraud Detection & Security
 - **Real-time Fraud Analysis**: AI-powered fraud detection system
@@ -320,8 +327,31 @@ We welcome contributions! Please follow these guidelines:
 
 ## 📝 Changelog
 
-### Version 1.1.9 (Latest)
-- � FIX: Fixed issue where new orders were getting refreshed when clicking on courier refresh to bulk refresh
+### Version 1.2.0 (Latest)
+- 🚀 NEW: **Order Cloning Feature** - Clone existing orders with complete product, shipping, and payment data
+- 🚀 NEW: **Dual-Format Support** - Seamlessly handles both legacy WooCommerce and new custom API order formats
+- 🚀 NEW: **Smart Shipping Method Lookup** - Automatically matches shipping methods by name and retrieves complete method details
+- 🚀 NEW: **Shipping Zone Support** - Properly handles shipping methods configured across multiple zones with instance ID matching
+- 🚀 NEW: **Complete Product Data Preservation** - Cloned orders include 14 product fields (id, name, price, currency, regular_price, sale_price, sku, stock_status, stock_quantity, in_stock, type, permalink, image, from)
+- 🚀 NEW: **Improved Shipping Method Backend** - Fixed shipping method title display (now shows actual method name instead of generic "Shipping")
+- 🚀 NEW: **Instance-Based Shipping Resolution** - Backend now searches across all shipping zones for proper method instance matching
+- 🚀 NEW: **Form Validation Enhancements** - Better error messages for missing products, invalid shipping, and payment methods
+- 🚀 NEW: **Fallback Matching Logic** - Supports both instance_id and method_id for flexible shipping method resolution
+- ⚡ IMPROVED: **Order Creation Workflow** - Comprehensive validation and error handling for all order components
+- ⚡ IMPROVED: **TypeScript Composables** - Better type safety with ShippingMethod interface and proper type annotations
+- ⚡ IMPROVED: **Vue 3 Composition API** - Refactored useCustomOrder and useOrders composables for better code organization
+- ⚡ IMPROVED: **Dependency Injection** - Fixed shipping and payment methods injection to prevent runtime errors
+- ⚡ IMPROVED: **User Notifications** - More informative toast messages for order cloning success/failure
+- ⚡ IMPROVED: **Graceful Fallbacks** - Better handling of missing data with appropriate defaults and user guidance
+- ✨ ENHANCEMENT: **API Response Consistency** - Shipping methods API now provides complete zone information
+- ✨ ENHANCEMENT: **Frontend-Backend Alignment** - Coordinated shipping method data structure between Vue frontend and PHP backend
+- 📚 ADDED: **Complete Documentation** - SHIPPING_METHOD_BACKEND_FIX.md, SHIPPING_METHOD_COMPLETE_STRUCTURE.md, PRODUCT_DATA_STRUCTURE.md
+- 🔧 FIX: **Shipping Method Resolution** - Fixed issue where shipping methods showed as generic "Shipping" instead of actual method names
+- 🔧 FIX: **Zone-Based Method Lookup** - Resolved inability to find instance-based shipping methods in specific zones
+- 🔧 FIX: **Instance ID Handling** - Improved matching logic for shipping methods with instance IDs across zones
+
+### Version 1.1.9
+- 🔧 FIX: Fixed issue where new orders were getting refreshed when clicking on courier refresh to bulk refresh
 
 ### Version 1.1.8
 - 🚀 NEW: Double-click editable consignment ID field in order delivery partner section for quick inline editing

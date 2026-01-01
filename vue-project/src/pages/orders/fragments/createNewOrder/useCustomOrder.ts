@@ -393,7 +393,6 @@ export const useCustomOrder = () =>
             method_id: method.method_id || '',
             method_title: method.method_title || '',
             instance_id: method.instance_id || '',
-            method_title: method.method_title || '',
             settings: method.settings || [],
             shipping_cost: method.shipping_cost || 0,
             title: method.title || ''

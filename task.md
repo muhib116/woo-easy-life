@@ -89,7 +89,11 @@ shipping method editable korte hobe
 
 ✅ courier data refrash if order has courier data
 ✅ order duplication
-already clone kore toiri hoise amon order theke abar clone korle problem kore
+✅ already clone kore toiri hoise amon order theke abar clone korle problem kore
+
+
+**** device block ta kaj kortesena mone hochche
+
 bulk fraud check
 missing order bulk delete not work if checked item >40
 missing order permanent delete after sartain time
@@ -112,7 +116,7 @@ missing order permanent delete after sartain time
 👉🏻 Send message for abandoned order customer
 👉🏻 Order list filter by courier partner
 👉🏻 landing page view calculation
-👉🏻 missing order theke create order er button dite hobe
+✅ missing order theke create order er button dite hobe
 👉🏻 abandont order a sound dite hobe
 👉🏻 sound on and off localstorage theke control korte hobe
 
@@ -123,14 +127,14 @@ missing order permanent delete after sartain time
 👉🏻 abandont, comment and message er lead gulu fb er ad cost er 50% price sale korte hobe.
 
 
-=> courier config a error handle korte hobe
+✅ courier config a error handle korte hobe
 => code snippet (header, footer)
 => Cart Abandonment Reasons: Collect insights on why customers abandoned their carts.
 
 
 👉🏻 cost management
 👉🏻 Chatting module
-👉🏻 make the system responsive
+✅ make the system responsive
 👉🏻 tutorial
 👉🏻 help center
 👉🏻 request a feature

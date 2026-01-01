@@ -52,8 +52,16 @@
     const _useNotification = useNotification()
 
     onMounted(async () => {
-        if(isValidLicenseKey.value) {
-            await loadCourierConfigData()
+        if (isValidLicenseKey.value) {
+            await loadCourierConfigData();
+
+            // Use a loop to keep the process alive
+            while (isValidLicenseKey.value) {
+                await _useNotification.checkNewOrderStatus();
+                
+                // Wait for 30 seconds before the next iteration
+                await new Promise(resolve => setTimeout(resolve, 30000));
+            }
         }
     })
 

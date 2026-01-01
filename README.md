@@ -15,6 +15,15 @@ WooEasyLife is a comprehensive WordPress plugin that supercharges your WooCommer
 - **Custom Order Statuses**: Create and manage custom order statuses
 - **Order Notes & History**: Track order changes and add custom notes
 - **Quick Status Changes**: One-click status updates with customizable buttons
+- **Custom Checkout Fields Support**: Automatically captures and displays custom billing/shipping fields from checkout
+- **Flexible Note Management**: Save custom field values to courier, invoice, or customer notes with dropdown selection
+- **Order Cloning**: Clone existing orders (both WooCommerce and custom API formats) with complete product, shipping, and payment data
+- **Smart Shipping Method Lookup**: Automatically matches shipping methods by name and retrieves complete method details from zones
+- **Shipping Zone Support**: Properly handles shipping methods configured across multiple zones
+- **Complete Shipping Method Data**: Captures and preserves zone information, method titles, costs, and instance IDs
+- **Product Data Preservation**: Clone orders with complete product metadata including images, stock status, pricing variants, and SKUs
+- **Dual-Format Order Support**: Handles both legacy WooCommerce and new custom API order formats seamlessly
+- **Extended Product Information**: Cloned orders include 14 product fields for rich product metadata
 
 ### 🔒 Fraud Detection & Security
 - **Real-time Fraud Analysis**: AI-powered fraud detection system
@@ -29,6 +38,7 @@ WooEasyLife is a comprehensive WordPress plugin that supercharges your WooCommer
 - **Real-time Status Sync**: Automatic status updates from courier APIs
 - **Shipping Cost Calculation**: Dynamic shipping cost management
 - **Delivery Tracking**: Track shipments directly from the dashboard
+- **Inline Consignment Editing**: Double-click to edit consignment IDs with keyboard shortcuts support
 
 ### 📊 Analytics & Reporting
 - **Sales Dashboard**: Comprehensive sales analytics and charts
@@ -49,6 +59,13 @@ WooEasyLife is a comprehensive WordPress plugin that supercharges your WooCommer
 - **Device Tracking**: Track customer devices for security
 - **Custom Product Management**: Advanced product handling capabilities
 - **Balance Management**: Built-in credit system for premium features
+- **Cache Prevention**: Bypass all major caching plugins for real-time data
+- **CORS Support**: Full cross-origin resource sharing for frontend integrations
+- **Multi-Submenu Navigation**: Organized dashboard, orders, missing orders, and blacklist sections
+- **Custom Field Management**: Full support for custom billing and shipping fields added by plugins or themes
+- **Smart Field Detection**: Automatically identifies and separates custom fields from default WooCommerce fields
+- **Interactive Field Display**: Hover-over tooltips showing custom field data in order lists
+- **Multi-Destination Save**: Save custom field values to courier notes, invoice notes, or customer notes
 
 ## 🔧 Installation
 
@@ -142,6 +159,21 @@ The plugin includes a built-in licensing system:
 2. **Bulk Submit**: Send orders to couriers in batches
 3. **Track Status**: Monitor delivery status automatically
 4. **Handle Returns**: Process returned orders efficiently
+5. **Edit Consignment ID**: Double-click the consignment ID to edit inline
+   - Press **Enter** or click outside to save
+   - Press **Escape** to cancel editing
+   - Hover over the field to see the edit indicator
+
+### Custom Checkout Fields
+1. **Automatic Detection**: Custom fields are automatically detected and captured from checkout
+2. **View in Admin**: Custom fields display in WordPress admin order details page with styled sections
+3. **Order List Display**: Hover over info icon in order list to see custom field values
+4. **Save to Notes**: Click the pencil icon and select where to save the field value:
+   - **Courier Note**: For shipping/delivery instructions
+   - **Invoice Note**: For billing or invoice-related information
+   - **Customer Note**: For customer-specific details
+5. **API Access**: Custom fields available via REST API in `billing_address.custom_fields` and `shipping_address.custom_fields`
+6. **Compatible With**: CartFlows, WooCommerce Checkout Manager, Checkout Field Editor, and other custom field plugins
 
 ## 🔌 API Endpoints
 
@@ -150,6 +182,34 @@ The plugin includes a built-in licensing system:
 GET    /wp-json/wooeasylife/v1/orders
 POST   /wp-json/wooeasylife/v1/orders/change-status
 GET    /wp-json/wooeasylife/v1/status-with-counts
+POST   /wp-json/wooeasylife/v1/save-order-notes
+```
+
+**Order Response Structure** (including custom fields):
+```json
+{
+  "billing_address": {
+    "first_name": "John",
+    "phone": "0123456789",
+    "custom_fields": [
+      {
+        "key": "billing_special_instruction",
+        "label": "Special Instruction",
+        "value": "Please call before delivery"
+      }
+    ]
+  },
+  "shipping_address": {
+    "first_name": "John",
+    "custom_fields": [
+      {
+        "key": "shipping_preferred_time",
+        "label": "Preferred Time",
+        "value": "Morning delivery"
+      }
+    ]
+  }
+}
 ```
 
 ### Fraud Detection
@@ -266,6 +326,74 @@ We welcome contributions! Please follow these guidelines:
 - Document all public functions
 
 ## 📝 Changelog
+
+### Version 1.2.0 (Latest)
+- 🚀 NEW: **Order Cloning Feature** - Clone existing orders with complete product, shipping, and payment data
+- 🚀 NEW: **Dual-Format Support** - Seamlessly handles both legacy WooCommerce and new custom API order formats
+- 🚀 NEW: **Smart Shipping Method Lookup** - Automatically matches shipping methods by name and retrieves complete method details
+- 🚀 NEW: **Shipping Zone Support** - Properly handles shipping methods configured across multiple zones with instance ID matching
+- 🚀 NEW: **Complete Product Data Preservation** - Cloned orders include 14 product fields (id, name, price, currency, regular_price, sale_price, sku, stock_status, stock_quantity, in_stock, type, permalink, image, from)
+- 🚀 NEW: **Improved Shipping Method Backend** - Fixed shipping method title display (now shows actual method name instead of generic "Shipping")
+- 🚀 NEW: **Instance-Based Shipping Resolution** - Backend now searches across all shipping zones for proper method instance matching
+- 🚀 NEW: **Form Validation Enhancements** - Better error messages for missing products, invalid shipping, and payment methods
+- 🚀 NEW: **Fallback Matching Logic** - Supports both instance_id and method_id for flexible shipping method resolution
+- ⚡ IMPROVED: **Order Creation Workflow** - Comprehensive validation and error handling for all order components
+- ⚡ IMPROVED: **TypeScript Composables** - Better type safety with ShippingMethod interface and proper type annotations
+- ⚡ IMPROVED: **Vue 3 Composition API** - Refactored useCustomOrder and useOrders composables for better code organization
+- ⚡ IMPROVED: **Dependency Injection** - Fixed shipping and payment methods injection to prevent runtime errors
+- ⚡ IMPROVED: **User Notifications** - More informative toast messages for order cloning success/failure
+- ⚡ IMPROVED: **Graceful Fallbacks** - Better handling of missing data with appropriate defaults and user guidance
+- ✨ ENHANCEMENT: **API Response Consistency** - Shipping methods API now provides complete zone information
+- ✨ ENHANCEMENT: **Frontend-Backend Alignment** - Coordinated shipping method data structure between Vue frontend and PHP backend
+- 📚 ADDED: **Complete Documentation** - SHIPPING_METHOD_BACKEND_FIX.md, SHIPPING_METHOD_COMPLETE_STRUCTURE.md, PRODUCT_DATA_STRUCTURE.md
+- 🔧 FIX: **Shipping Method Resolution** - Fixed issue where shipping methods showed as generic "Shipping" instead of actual method names
+- 🔧 FIX: **Zone-Based Method Lookup** - Resolved inability to find instance-based shipping methods in specific zones
+- 🔧 FIX: **Instance ID Handling** - Improved matching logic for shipping methods with instance IDs across zones
+
+### Version 1.1.9
+- 🔧 FIX: Fixed issue where new orders were getting refreshed when clicking on courier refresh to bulk refresh
+
+### Version 1.1.8
+- 🚀 NEW: Double-click editable consignment ID field in order delivery partner section for quick inline editing
+- 🚀 NEW: Keyboard shortcuts for consignment ID editing - Enter to save, Escape to cancel, click outside to save
+- 🚀 NEW: Visual hover effects on editable consignment ID field with subtle border and background changes
+- ⚡ IMPROVED: Enhanced UX for courier data management with instant inline updates without page refresh
+- ⚡ IMPROVED: Consignment ID field now displays 'Not set' when empty for better user clarity
+- ⚡ IMPROVED: Auto-focus on input field when entering edit mode for faster data entry
+- ✨ ENHANCEMENT: Seamless editing experience with automatic save on blur (click outside)
+- ✨ ENHANCEMENT: Better visual indication of editable fields with cursor pointer and tooltip
+- ✨ ENHANCEMENT: Smoother transition between view and edit modes for consignment IDs
+
+### Version 1.1.7
+- 🚀 NEW: Dashboard submenu structure (Dashboard, Orders, Missing Orders, Black List) for better navigation
+- 🚀 NEW: Comprehensive cache prevention system - prevents caching by all major WordPress cache plugins
+- 🚀 NEW: Full CORS support for cross-origin API requests - enables seamless frontend integration
+- 🚀 NEW: Protected against 12+ caching plugins including WP Rocket, LiteSpeed, Cloudflare, W3 Total Cache, and more
+- 🚀 NEW: Custom checkout fields support - automatically captures billing and shipping custom fields
+- 🚀 NEW: Smart custom field detection - separates custom fields from default WooCommerce fields
+- 🚀 NEW: Custom fields display in WordPress admin order details page
+- 🚀 NEW: Interactive custom field tooltips in order management interface
+- 🚀 NEW: Dropdown menu to save custom field values to courier, invoice, or customer notes
+- 🚀 NEW: Helper functions `get_billing_custom_fields()` and `get_shipping_custom_fields()`
+- ⚡ IMPROVED: API responses now include comprehensive no-cache headers for real-time data
+- ⚡ IMPROVED: Enhanced permission management - Shop Managers can now access WooEasyLife features
+- ⚡ IMPROVED: Admin menu structure with organized submenus for better UX
+- ⚡ IMPROVED: API endpoints now bypass all CDN/proxy caching layers
+- ⚡ IMPROVED: Order API response now includes `custom_fields` array in billing and shipping addresses
+- ⚡ IMPROVED: Custom field values can be appended to existing notes or create new ones
+- ⚡ IMPROVED: Better handling of custom fields from CartFlows, WooCommerce Checkout Manager, and other plugins
+- 🛡️ SECURITY: Added CORS headers with proper origin validation
+- 🛡️ SECURITY: Implemented cache-busting headers to prevent sensitive data caching
+- 🐛 FIX: Resolved API response caching issues across all major cache plugins
+- 🐛 FIX: Fixed CORS policy errors for localhost and development environments
+- 🐛 FIX: Custom field data properly structured with key, label, and value
+- 🐛 FIX: Toast notifications for successful custom field saves
+- ✨ ENHANCEMENT: Unique timestamp headers (X-WEL-Timestamp) for each API response
+- ✨ ENHANCEMENT: Better compatibility with caching plugins and CDN services
+- ✨ ENHANCEMENT: Improved Vue.js SPA integration with proper CORS handling
+- ✨ ENHANCEMENT: Real-time custom field data display with hover-over information icon
+- ✨ ENHANCEMENT: User-friendly field labels (auto-formatted from field keys)
+- ✨ ENHANCEMENT: TypeScript support for custom field data structures
 
 ### Version 1.1.6
 - 🚀 NEW: Bulk courier data update API endpoint (`/courier-data/update-bulk`) for efficient mass updates.

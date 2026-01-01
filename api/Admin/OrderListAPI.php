@@ -367,6 +367,8 @@ class OrderListAPI
             $customer_latitude = $order->get_meta('_wel_customer_latitude', true);
             $customer_longitude = $order->get_meta('_wel_customer_longitude', true);
 
+            $customFieldData = get_only_cartflows_custom_fields_data($order->get_id());
+            
             $data[] = [
                 'id'            => $order->get_id(),
                 'status'        => $order->get_status(),
@@ -399,6 +401,7 @@ class OrderListAPI
                 'order_source'     => get_order_source($order),
                 'created_via' => $created_via,
                 'customer_ip'   => $customer_ip,
+                'customFieldData' => $customFieldData,
                 'customer_device_token'   => $customer_device_token,
                 'phone_block_listed' => $phone_block_listed,
                 'email_block_listed' => $email_block_listed,
@@ -890,6 +893,7 @@ class OrderListAPI
     public function change_order_status(\WP_REST_Request $request) {
         // Get the payload from the request
         $payload = $request->get_json_params();
+
     
         // Validate the payload
         if (empty($payload) || !is_array($payload)) {
@@ -913,8 +917,8 @@ class OrderListAPI
             }
     
             $order_id = intval($entry['order_id']);
-            $new_status = sanitize_text_field($entry['new_status']);
-    
+            $new_status = $entry['new_status'];
+            
             // Get the order by ID
             $order = wc_get_order($order_id);
     

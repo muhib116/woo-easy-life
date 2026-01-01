@@ -72,7 +72,7 @@
     const props = defineProps<{
         showRefreshBtn?: boolean
         hideText?: boolean
-        order: {
+        order?: {
             courier_data: object
         }
     }>()
@@ -81,15 +81,14 @@
         handleCourierEntry,
         clearSelectedOrders,
         setSelectedOrder,
-        selectedOrders,
         refreshBulkCourierData
-    } = inject('useOrders')
+    } = inject('useOrders') as any
     
-    const {configData} = inject('configData')
+    const {configData} = inject('configData') as any
     const {
         courierCompanyNames,
         courierConfigs
-    } = inject('useCourierConfig')
+    } = inject('useCourierConfig') as any
 
     const toggleCourierDropdown = ref(false)
     const handleCourier = async (partnerName, btn) => {

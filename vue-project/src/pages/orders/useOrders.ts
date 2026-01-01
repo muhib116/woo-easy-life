@@ -21,17 +21,22 @@ import { updateCourierDataBulk, changeStatusBulk } from "@/api/courier"
 import { manageCourier } from "./useHandleCourierEntry";
 import { filterOrderById, formatInvoice, normalizePhoneNumber, printProductDetails, showNotification } from "@/helper";
 import { steadfastBulkStatusCheck } from "@/remoteApi";
-import { isEmpty, isFunction } from "lodash";
 import { storeBulkRecordsInToOrdersMeta } from "@/api/courier";
 import { useRoute } from "vue-router";
+import {
+    shippingMethods, 
+    paymentMethods
+} from "@/storage"
 
 export const useOrders = () => {
   const route = useRoute();
+
   interface Order {
     id: string | number;
     courier_data?: {
       consignment_id?: string;
       status?: string;
+      invoice?: string;
     };
     billing_address?: {
       phone?: string;
@@ -57,13 +62,12 @@ export const useOrders = () => {
     customer_ip?: string;
     [key: string]: any;
   }
-
+  let timeoutId: any = null;
   const orders = ref<Order[]>([]);
-  const shippingMethods = ref(null);
   const totalRecords = ref(0);
   const orderStatusWithCounts = ref([]);
   const activeOrder = ref();
-  const selectedOrders = ref(new Set([]));
+  const selectedOrders = ref<Set<Order>>(new Set<Order>());
   const isShippingEditing = ref(false);
   const selectAll = ref(false);
   const isLoading = ref(false);
@@ -72,7 +76,6 @@ export const useOrders = () => {
   const toggleNewOrder = ref(false);
   const wooCommerceStatuses = ref([]);
   const selectedStatus = ref(null);
-  const paymentMethods = ref([])
   const { userData, loadUserData } = inject('useServiceProvider');
 
   const courierStatusInfo = {
@@ -179,14 +182,17 @@ export const useOrders = () => {
     shippingMethods.value = _shippingMethods
   }
 
-  const handleFraudCheck = async (button) => {
-    if (![...selectedOrders.value].length) {
+  const handleFraudCheck = async (button: any, order?: any) => {
+    if (!order && ![...selectedOrders.value].length) {
       alert("Please select at least one item.");
       return;
     }
-    const _selectedOrders = [...selectedOrders.value];
+    let _selectedOrders = [...selectedOrders.value];
+    if (order) {
+      _selectedOrders = [order];
+    }
     const chunkSize = 10;
-    const orderChunks = [];
+    const orderChunks: any[] = [];
     for (let i = 0; i < _selectedOrders.length; i += chunkSize) {
       orderChunks.push(_selectedOrders.slice(i, i + chunkSize));
     }
@@ -455,15 +461,34 @@ export const useOrders = () => {
     }
   };
 
+  const updateConsignmentIdInOrder = async (order: { id: any; courier_data: any; }) => {
+    if (timeoutId) clearTimeout(timeoutId);
+    timeoutId = setTimeout(async () => {
+      try {
+        isLoading.value = true;
+        const payload = {
+          order_id: order.id,
+        courier_data: order.courier_data
+      };
+        await updateCourierData(payload);
+        showNotification({ type: 'success', message: 'Consignment ID updated successfully.' });
+      } catch (err) {
+        showNotification({ type: 'danger', message: 'Failed to update Consignment ID.' });
+      } finally {
+        isLoading.value = false;
+      }
+    }, 600);
+  }
+
   const refreshBulkCourierData = async (btn, courierPartner = 'steadfast') => {
     try {
       btn.isLoading = true;
-      let courierData = selectedOrders.value?.size ? [...selectedOrders.value] : orders.value;
+      let courierData = selectedOrders.value && selectedOrders.value.size ? Array.from(selectedOrders.value) : (orders.value || []);
 
-      // If no selected orders, filter out orders without courier data
-      if (![...selectedOrders.value]?.length) {
-        courierData = courierData.filter((item) => !isEmpty(item.courier_data));
-      }
+      courierData = courierData.filter(item => {
+        const inv = item?.courier_data?.invoice;
+        return typeof inv === 'string' ? inv.trim().length > 0 : Boolean(inv);
+      });
 
       // Prepare payload: consignment_ids if available, otherwise invoice_ids
       const payload = {
@@ -614,7 +639,6 @@ export const useOrders = () => {
     }
   }
 
-  let timeoutId: any;
   const totalPages = computed(() => orderFilter.value.per_page ? Math.ceil(totalRecords.value / orderFilter.value.per_page) : 1);
   const debouncedGetOrders = (btn) => {
     orderFilter.value.page = orderFilter.value.page > totalPages.value ? totalPages.value : orderFilter.value.page
@@ -818,6 +842,7 @@ export const useOrders = () => {
     include_past_new_orders_thats_not_handled_by_wel_plugin,
     loadPaymentMethods,
     handleLabelPrint,
+    updateConsignmentIdInOrder,
     paymentMethods,
     selectedDspFilter,
     dspFilterOptions,

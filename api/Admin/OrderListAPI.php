@@ -363,7 +363,10 @@ class OrderListAPI
             $referrer_url = get_post_meta($order_id, '_referrer_url', true);
             //get order note of cod modification
             $cod_modification_note = get_order_cod_modification_note($order);
-            
+            $geo_info = $order->get_meta('_wel_geo_info', true);
+            $customer_latitude = $order->get_meta('_wel_customer_latitude', true);
+            $customer_longitude = $order->get_meta('_wel_customer_longitude', true);
+
             $data[] = [
                 'id'            => $order->get_id(),
                 'status'        => $order->get_status(),
@@ -389,6 +392,9 @@ class OrderListAPI
                 'customer_id'   => $order->get_customer_id(),
                 'customer_name' => $order->get_billing_first_name() . ' ' . $order->get_billing_last_name(),
                 'shipping_cost' => $order->get_shipping_total(),
+                'geo_info' => $geo_info,
+                'customer_latitude' => $customer_latitude,
+                'customer_longitude' => $customer_longitude,
                 'shipping_methods' => get_order_shipping_methods($order),
                 'order_source'     => get_order_source($order),
                 'created_via' => $created_via,

@@ -71,12 +71,16 @@
         </div>
         <div
             class="flex gap-1 items-center"
-            :title="`${order?.billing_address?.address_1}, ${order?.billing_address?.address_2}`"
         >
-            <div class="max-w-[240px] break-all">
-                🏠 
-                {{ order?.billing_address?.address_1 }},
-                {{ order?.billing_address?.address_2 }}
+            <div class="max-w-[240px] break-all flex items-start gap-1">
+                <span :title="`${order?.billing_address?.address_1}, ${order?.billing_address?.address_2}`">
+                    🏠 
+                    {{ order?.billing_address?.address_1 }},
+                    {{ order?.billing_address?.address_2 }}
+                </span>
+                <GeoLocation
+                    :order="order"
+                />
             </div>
         </div>
 
@@ -131,6 +135,7 @@
     import { baseUrl, changeStatus } from '@/api'
     import QuickOrderStatusChange from '@/pages/orders/fragments/fragments/data/QuickOrderStatusChange.vue'
     import BlockAllTogether from '@/pages/orders/fragments/fragments/data/BlockAllTogether.vue'
+import GeoLocation from '../GeoLocation.vue';
     
     const props = defineProps({
         order: Object

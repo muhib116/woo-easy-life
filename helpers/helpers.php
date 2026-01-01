@@ -67,6 +67,30 @@ function get_customer_ip() {
     return false; // Return false if no valid IP could be found.
 }
 
+function get_geolocation_info($ip) {
+    // You can cache this result for performance if needed
+    $response = wp_remote_get("http://ip-api.com/json/" . urlencode($ip));
+    if (is_wp_error($response)) {
+        return [];
+    }
+    $body = wp_remote_retrieve_body($response);
+    $data = json_decode($body, true);
+
+    if (!is_array($data) || empty($data) || ($data['status'] ?? '') !== 'success') {
+        return [];
+    }
+
+    return [
+        'country'  => $data['country'] ?? '',
+        'region'   => $data['regionName'] ?? '',
+        'city'     => $data['city'] ?? '',
+        'lat'      => $data['lat'] ?? '',
+        'lon'      => $data['lon'] ?? '',
+        'timezone' => $data['timezone'] ?? '',
+        'isp'      => $data['isp'] ?? '',
+    ];
+}
+
 function is_wel_license_valid() {
     $license_status = get_option('woo_easy_life_license_status', 'invalid');
     return ($license_status === 'valid');

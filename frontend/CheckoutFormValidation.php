@@ -12,6 +12,7 @@ class CheckoutFormValidation {
     {   
         add_action('woocommerce_checkout_create_order', [$this, 'modify_order_phone'], 10, 2);
         add_action('woocommerce_checkout_create_order', [$this, 'save_device_token_to_order'], 10, 2);
+        add_action('woocommerce_checkout_create_order', [$this, 'save_geolocation_to_order'], 10, 2);
 
         add_action('woocommerce_after_checkout_validation', [$this, 'form_validation'], 10, 2);
     }
@@ -163,7 +164,7 @@ class CheckoutFormValidation {
     }
 
     private function handle_rate_limiting(&$errors) {
-        $ip = $this->get_customer_ip();
+        $ip = get_customer_ip();
         if (!$ip) return;
         $transient_key = __PREFIX . 'rate_limit_' . md5($ip);
         $timestamps = get_transient($transient_key) ?: [];
@@ -177,17 +178,6 @@ class CheckoutFormValidation {
         }
         $recent_timestamps[] = $current_time;
         set_transient($transient_key, $recent_timestamps, self::RATE_LIMIT_SECONDS);
-    }
-
-    private function get_customer_ip() {
-        $ip = '';
-        if (!empty($_SERVER['HTTP_CF_CONNECTING_IP'])) $ip = sanitize_text_field(wp_unslash($_SERVER['HTTP_CF_CONNECTING_IP']));
-        elseif (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) $ip = sanitize_text_field(wp_unslash($_SERVER['HTTP_X_FORWARDED_FOR']));
-        elseif (!empty($_SERVER['HTTP_CLIENT_IP'])) $ip = sanitize_text_field(wp_unslash($_SERVER['HTTP_CLIENT_IP']));
-        elseif (!empty($_SERVER['REMOTE_ADDR'])) $ip = sanitize_text_field(wp_unslash($_SERVER['REMOTE_ADDR']));
-        $ip_array = explode(',', $ip);
-        $ip = trim($ip_array[0]);
-        return filter_var($ip, FILTER_VALIDATE_IP) ? $ip : false;
     }
 
     private $blacklist = [
@@ -355,6 +345,37 @@ class CheckoutFormValidation {
             if (!empty($device_token)) {
                 // Save to order meta
                 $order->update_meta_data('_wel_device_token', $device_token);
+            }
+        }
+    }
+
+    public function save_geolocation_to_order($order, $data) {
+        if (!is_wel_license_valid()) {
+            return;
+        }
+
+        $customer_ip = get_customer_ip();
+        if ($customer_ip) {
+            // if ip is localhost or private, skip
+            $geo_info = get_geolocation_info($customer_ip);
+            
+            if (in_array($customer_ip, ['127.0.0.1', '::1', 'localhost'])) {
+                $geo_info = get_geolocation_info('27.147.160.141'); // use a default public IP for localhost testing
+            }
+
+            if (!empty($geo_info)) {
+                // Save geolocation info to order single meta
+                $order->update_meta_data('_wel_geo_info', $geo_info);
+            }
+        }
+
+        if(isset($_POST['customer_latitude']) && isset($_POST['customer_longitude'])) {
+            $latitude = sanitize_text_field(wp_unslash($_POST['customer_latitude']));
+            $longitude = sanitize_text_field(wp_unslash($_POST['customer_longitude']));
+            if (!empty($latitude) && !empty($longitude)) {
+                // Save to order meta
+                $order->update_meta_data('_wel_customer_latitude', $latitude);
+                $order->update_meta_data('_wel_customer_longitude', $longitude);
             }
         }
     }

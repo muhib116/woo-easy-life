@@ -88,6 +88,20 @@
             v-model="configData[objKey]"
             placeholder="Enter logo url."
         />
+
+        <div v-else-if="objKey == 'invoice_theme'">
+            <Select.Primary
+                :options="[
+                    { title: '3x2 Paper Sticker', id: '3x2Paper' },
+                    { title: '3x2 Classic Paper Sticker', id: '3x2ClassicPaper' },
+                    { title: '3x3 Paper Sticker', id: '3x3Paper' },
+                ]"
+                v-model="configData[objKey]"
+                wrapperClass="w-[220px]"
+            />
+            <img :src="img_map[configData[objKey]]" class="mt-3 w-[100px]" />
+        </div>
+
         <Input.Primary
             v-else-if="objKey == 'invoice_phone'"
             wrapperClass="w-[220px]"
@@ -113,9 +127,13 @@
 
 <script setup lang="ts">
     import { normalizePhoneNumber, showNotification, validateBDPhoneNumber } from '@/helper';
-    import { Table, Input, Switch } from '@components'
+    import { Table, Input, Switch, Select } from '@/components'
     import { inject } from 'vue'
     import { set, get } from 'lodash'
+    
+    import img_3x2ClassicPaper from '../POS_Sticker/3x2ClassicPaper.webp'
+    import img_3x2Paper from '../POS_Sticker/3x2Paper.webp'
+    import img_3x3Paper from '../POS_Sticker/3x3Paper.webp'
 
     const {
         configData,
@@ -126,6 +144,12 @@
         index: number,
         objKey: string,
     }>()
+
+    const img_map = {
+        '3x2ClassicPaper': img_3x2ClassicPaper,
+        '3x2Paper': img_3x2Paper,
+        '3x3Paper': img_3x3Paper,
+    }
 
     const handle_config_for_duplicate_order_validation = async (objKey: string) => {
         if(get(configData, `value.${objKey}`) == 0 && !validateBDPhoneNumber(normalizePhoneNumber(configData.value['admin_phone'].trim()))) {

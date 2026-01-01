@@ -25,12 +25,12 @@ import { storeBulkRecordsInToOrdersMeta } from "@/api/courier";
 import { useRoute } from "vue-router";
 import {
     shippingMethods, 
-    paymentMethods
+    paymentMethods,
+    configData
 } from "@/storage"
 
 export const useOrders = () => {
   const route = useRoute();
-
   interface Order {
     id: string | number;
     courier_data?: {
@@ -777,7 +777,7 @@ export const useOrders = () => {
           await markAsDone(order, btn)
           index++;
           printNextOrder();
-        }, invoiceLogo);
+        }, invoiceLogo, configData.invoice_theme);
       }
     };
 

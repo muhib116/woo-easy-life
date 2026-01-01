@@ -1,9 +1,8 @@
 import { getWPOption } from "@/api"
 import { detectInternetState, showNotification } from "@/helper"
 import { onMounted, onUnmounted, ref } from "vue"
+import { configData } from "@/storage"
 
-
-const configData = ref()
 export const useLayout = () => {
     const loadConfig = async () => {
         if(configData.value) return

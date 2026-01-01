@@ -13,7 +13,7 @@
         <Button.Native
             v-if="order?.courier_data?.consignment_id"
             class="opacity-50 flex items-center hover:opacity-100"
-            @onClick="btn => printProductDetails(order, () => markAsDone(order, btn), configData.invoice_logo)"
+            @onClick="btn => printProductDetails(order, () => markAsDone(order, btn), configData.invoice_logo, configData.invoice_theme)"
             title="Print Tag"
         >
             <Icon

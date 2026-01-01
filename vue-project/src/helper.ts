@@ -1,5 +1,6 @@
 import { format, parseISO } from 'date-fns'
 import { toast, type ToastPosition } from 'vue3-toastify';
+import { sticker_3x2Paper, sticker_3x2ClassicPaper, sticker_3x3Paper } from './POS_invoice_templates'
 
 /**
  * Show a notification toast with optional HTML support.
@@ -475,71 +476,32 @@ export const handlePrint = () => {
     window.print();
 }
 
-export const printProductDetails = (order: any, cb: () => void, invoice_logo: string) => {
+export const printProductDetails = (order: any, cb: () => void, invoice_logo: string, invoice_theme: string) => {
     const qrData = order.courier_data.consignment_id
     const qrUrl = `https://quickchart.io/qr?text=${qrData}&size=100`; // Third-party QR generator
 
+    const pos_theme = {
+        '3x2Paper': sticker_3x2Paper,
+        '3x2ClassicPaper': sticker_3x2ClassicPaper,
+        '3x3Paper': sticker_3x3Paper
+    }
+    
     const printWindow = window.open("", "");
-    if (printWindow) {
-        printWindow.document.write(`
-            <!DOCTYPE html>
-                <html lang="en">
-                <head>
-                    <meta charset="UTF-8">
-                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                    <title>Document</title>
-                    <style>
-                        *, ::before, ::after {
-                            box-sizing: border-box;
-                            margin: 0;
-                            padding: 0;
-                        }
-                        @page {
-                            size: 3in 2in landscape;
-                            padding: 10px;
-                        }
-                    </style>
-                </head>
-                <body>
-                    <div style="
-                        width: 2.78in; 
-                        height: 1.8in; 
-                        padding: 4px 4px; 
-                        border-radius: 4px;
-                        border: 1px solid;
-                        font-family: poppins, sans-serif;
-                        font-size: 14px;
-                        display: flex; 
-                        align-items: center;
-                        justify-content: space-between;
-                        margin-left: 4px;
-                    ">
-                        <div style="display: grid; gap: 4px;">
-                            <img src="${invoice_logo || 'https://api.wpsalehub.com/app-logo'}" alt="Logo" style="height: 40px; max-width: 130px; object-fit: contain; margin-bottom: 4px;" />
-                            <p style="margin:0;"><strong>ID: <span style="font-size: 20px">${order.courier_data.consignment_id}</span></strong></p>
-                            <p style="margin:0;"><strong>COD:</strong> ${order.total}${order.currency_symbol}</p>
-                            <p style="margin:0; word-break: break-all;"><strong>Name:</strong> ${order.customer_name}</p>
-                            <p style="margin:0;"><strong>Phone:</strong> ${order.billing_address.phone}</p>
-                        </div>
-                        <div>
-                            <img src="${qrUrl}" alt="QR Code" style="width: 100px; height: 100px;margin-right: -8px;margin-top: -8px;margin-bottom: -8px;" />
-                        </div>
-                    </div>
-                </body>
-            </html>
-        `);
+    if (printWindow && printWindow?.document) {
+        const htmlContent = pos_theme[invoice_theme as keyof typeof pos_theme](order, invoice_logo, qrUrl, formatInvoice);
+        printWindow?.document.write(htmlContent);
+        printWindow?.document.close();
 
-        printWindow.document.close();
         // Wait for the print job to complete before closing and calling the callback
         printWindow.onafterprint = () => {
-            printWindow.close();
+            printWindow?.close();
             if (typeof cb === "function") {
                 cb();
             }
         };
 
         checkImageLoad(qrUrl, (isLoaded) => {
-            if (isLoaded) {
+            if (isLoaded && printWindow) {
                 setTimeout(() => {
                     printWindow.print();
                 }, 100); // Delay to ensure the image is loaded

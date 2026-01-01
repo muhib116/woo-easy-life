@@ -95,6 +95,8 @@ shipping method editable korte hobe
 **** device block ta kaj kortesena mone hochche
 **** IP address diye search enabled korte hobe
 **** IP address copy korar akta button dite hobe
+**** pertial delivery status niye kaj korte hobe
+
 
 bulk fraud check
 missing order bulk delete not work if checked item >40

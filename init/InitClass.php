@@ -138,6 +138,7 @@ class InitClass {
             
             "invoice_company_name" => $site_title,
             "invoice_logo" => $logo_url,
+            "invoice_theme" => '3x3Paper',
             "invoice_email" => '',
             "invoice_phone" => '',
             "invoice_print" => false,

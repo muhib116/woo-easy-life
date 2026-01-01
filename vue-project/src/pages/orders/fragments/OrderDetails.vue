@@ -108,7 +108,7 @@
     const isLoading = ref(false)
 
     const printHandler = () => {
-        printProductDetails(activeOrder.value, () => markAsDone(activeOrder.value, isLoading), configData.invoice_logo)
+        printProductDetails(activeOrder.value, () => markAsDone(activeOrder.value, isLoading), configData.invoice_logo, configData.invoice_theme)
     }
     
     const onKeyUp = (event: KeyboardEvent) => {

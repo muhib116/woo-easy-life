@@ -337,10 +337,13 @@ We welcome contributions! Please follow these guidelines:
 - 🚀 NEW: **Instance-Based Shipping Resolution** - Backend now searches across all shipping zones for proper method instance matching
 - 🚀 NEW: **Form Validation Enhancements** - Better error messages for missing products, invalid shipping, and payment methods
 - 🚀 NEW: **Fallback Matching Logic** - Supports both instance_id and method_id for flexible shipping method resolution
+- 🚀 NEW: **Admin Footer Version Display** - The admin dashboard footer now displays the plugin’s current version alongside the thank you message.
+- 🚀 NEW: **Frontend DSP Filter** - Added delivery probability (DSP) filter for orders in the Vue frontend.
 - ⚡ IMPROVED: **Order Creation Workflow** - Comprehensive validation and error handling for all order components
 - ⚡ IMPROVED: **TypeScript Composables** - Better type safety with ShippingMethod interface and proper type annotations
 - ⚡ IMPROVED: **Vue 3 Composition API** - Refactored useCustomOrder and useOrders composables for better code organization
-- ⚡ IMPROVED: **Dependency Injection** - Fixed shipping and payment methods injection to prevent runtime errors
+- ⚡ IMPROVED: **Dependency Injection** - Fixed configData and service provider injection in Vue composables; added fallback/defaults and robust checks for empty objects.
+- ⚡ IMPROVED: **Config Handling** - Improved logic for merging and loading configuration data. The plugin now checks for empty config objects before fetching new data.
 - ⚡ IMPROVED: **User Notifications** - More informative toast messages for order cloning success/failure
 - ⚡ IMPROVED: **Graceful Fallbacks** - Better handling of missing data with appropriate defaults and user guidance
 - ✨ ENHANCEMENT: **API Response Consistency** - Shipping methods API now provides complete zone information

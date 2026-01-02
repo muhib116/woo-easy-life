@@ -18,16 +18,20 @@ export const useNotification = () => {
     try {
       const { data } = await checkHasNewOrder();
       if (data?.has_new_orders) {
-        notificationSound.play();
+        try {
+          await notificationSound.play();
+        } catch (audioError) {
+          console.warn("Failed to play notification sound:", audioError);
+        }
+        
         hasNewOrder.value = true;
         showNotification({
           type: 'success',
           message: 'New Order Received 🎉'
         })
 
-        if (route.name == 'orders') {
+        if (route.name === 'orders' && loadOrderStatusList) {
           await loadOrderStatusList();
-          // await getOrders(false);
         }
       }
     } catch (error) {

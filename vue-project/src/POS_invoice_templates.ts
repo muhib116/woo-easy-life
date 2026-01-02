@@ -368,13 +368,14 @@ export const sticker_3x3Paper = (order: any, invoice_logo: string, qrUrl: string
                     display: flex;
                     flex-direction: column;
                     font-family: poppins, sans-serif;
+                    border: 1px solid #000;
                 }
 
                 /* Top Brand Bar */
                 .top-banner {
                     background: #000;
                     color: #fff;
-                    padding: 5px 10px;
+                    padding: 6px 10px;
                     display: flex;
                     justify-content: center;
                     align-items: center;
@@ -382,8 +383,8 @@ export const sticker_3x3Paper = (order: any, invoice_logo: string, qrUrl: string
                 }
 
                 .banner-text {
-                    font-size: 10px;
-                    font-weight: 500;
+                    font-size: 13px;
+                    font-weight: 700;
                     letter-spacing: 1.2px;
                     text-transform: uppercase;
                 }
@@ -444,7 +445,7 @@ export const sticker_3x3Paper = (order: any, invoice_logo: string, qrUrl: string
                 .value-cell {
                     background-color: #fff;
                     text-align: right !important;
-                    font-size: 13px;
+                    font-size: 14px;
                     font-weight: 400;
                 }
 
@@ -463,11 +464,12 @@ export const sticker_3x3Paper = (order: any, invoice_logo: string, qrUrl: string
 
                 .id-badge {
                     display: inline-block;
+                    width: fit-content;
                     background: #000;
                     color: #fff;
                     padding: 2px 6px;
-                    font-size: 12px;
-                    font-weight: 400;
+                    font-size: 13px;
+                    font-weight: 700;
                     margin-top: 4px;
                     margin-bottom: 4px;
                     border-radius: 2px;
@@ -525,8 +527,8 @@ export const sticker_3x3Paper = (order: any, invoice_logo: string, qrUrl: string
                 }
 
                 .qr-code {
-                    width: 100px; 
-                    height: 100px; 
+                    width: 120px; 
+                    height: 120px; 
                     display: block;
                     margin: 0 auto;
                 }
@@ -547,7 +549,7 @@ export const sticker_3x3Paper = (order: any, invoice_logo: string, qrUrl: string
                 }
 
                 .footer {
-                    padding: 8px 4px;
+                    padding: 8px 4px 8px 6px;
                     text-align: center;
                     font-size: 14px;
                     color: #000;

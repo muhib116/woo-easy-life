@@ -23,8 +23,8 @@
 </template>
 
 <script setup lang="ts">
-    import { Navigation, Loader } from '@components'
-    import { onBeforeMount, provide, inject, onMounted } from 'vue'
+    import { Navigation, Loader } from '@/components'
+    import { onBeforeMount, provide, inject, onMounted, onBeforeUnmount } from 'vue'
     import { useCourier } from '@/pages/config/courier/useCourier'
     import { useNotification } from './useNotification'
     import { useLayout } from './useLayout'
@@ -51,17 +51,42 @@
     
     const _useNotification = useNotification()
 
-    onMounted(async () => {
+    onMounted(() => {
         if (isValidLicenseKey.value) {
-            await loadCourierConfigData();
+          loadCourierConfigData();
+          
+          // Long polling for new orders
+          let isPolling = true;
+          let isRequestInProgress = false;
 
-            // Use a loop to keep the process alive
-            while (isValidLicenseKey.value) {
-                await _useNotification.checkNewOrderStatus();
-                
-                // Wait for 30 seconds before the next iteration
-                await new Promise(resolve => setTimeout(resolve, 30000));
-            }
+          const startLongPolling = async () => {
+              while (isPolling) {
+                  // Prevent multiple concurrent requests
+                  if (isRequestInProgress) {
+                      await new Promise(resolve => setTimeout(resolve, 100));
+                      continue;
+                  }
+
+                  try {
+                      isRequestInProgress = true;
+                      await _useNotification.checkNewOrderStatus();
+                      isRequestInProgress = false;
+                      // Immediately start next poll after response
+                  } catch (error) {
+                      console.error("Long polling error:", error);
+                      isRequestInProgress = false;
+                      // Wait before retrying on error
+                      await new Promise(resolve => setTimeout(resolve, 5000));
+                  }
+              }
+          };
+
+          startLongPolling();
+
+          // Stop polling when component unmounts
+          onBeforeUnmount(() => {
+              isPolling = false;
+          });
         }
     })
 

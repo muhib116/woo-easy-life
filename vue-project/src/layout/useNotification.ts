@@ -14,7 +14,7 @@ export const useNotification = () => {
       : window?.wooEasyLife?.dist_url + "/notification-sound.wav"
   );
 
-  const checkNewOrderStatus = async () => {
+  const checkNewOrderStatus = async (cb?: any) => {
     try {
       const { data } = await checkHasNewOrder();
       if (data?.has_new_orders) {
@@ -36,6 +36,10 @@ export const useNotification = () => {
       }
     } catch (error) {
       console.error("Error checking new order status:", error)
+    } finally {
+      if (cb && typeof cb === "function") {
+        cb();
+      }
     }
   }
 

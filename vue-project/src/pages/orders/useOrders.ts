@@ -357,6 +357,12 @@ export const useOrders = () => {
       }
     }).filter(Boolean);
 
+    // ADD THIS CHECK
+    if (!payload.length) {
+      showNotification({ type: 'warning', message: 'No valid device tokens found in selected orders.' });
+      return { success: false, errors: ['No valid device tokens'] };
+    }
+
     const errors: string[] = [];
     let blockCount = 0;
     try {

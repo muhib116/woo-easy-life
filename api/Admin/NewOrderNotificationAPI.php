@@ -34,29 +34,40 @@ class NewOrderNotificationAPI extends WP_REST_Controller
     }
 
     /**
-     * Check for new orders placed after the last check.
+     * Check for new orders with long polling.
      *
      * @param WP_REST_Request $request
      * @return WP_REST_Response
      */
     public function check_new_orders(WP_REST_Request $request)
     {
-        global $wpdb;
-    
-        $has_new_notification = get_transient('new_order_notification') ? true : false;
-        clear_new_order_notification();
-        // If no new orders are found
+        $timeout = 15; // Long polling timeout in seconds
+        $interval = 1; // Check interval in seconds
+        $waited = 0;
+
+        while ($waited < $timeout) {
+            $has_new_notification = get_transient('new_order_notification') ? true : false;
+            
+            if ($has_new_notification) {
+                delete_transient('new_order_notification');
+                return new WP_REST_Response([
+                    'status' => 'success',
+                    'data'   => [
+                        'has_new_orders' => true
+                    ],
+                ], 200);
+            }
+
+            sleep($interval);
+            $waited += $interval;
+        }
+
+        // Timeout: no new order found
         return new WP_REST_Response([
             'status' => 'success',
             'data'   => [
-                'has_new_orders' => $has_new_notification
+                'has_new_orders' => false
             ],
         ], 200);
     }
-    
-}
-
-// Clear notification after check
-function clear_new_order_notification() {
-    delete_transient('new_order_notification');
 }

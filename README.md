@@ -7,6 +7,16 @@
 
 WooEasyLife is a comprehensive WordPress plugin that supercharges your WooCommerce store with advanced order management, fraud detection, courier integration, and customer analytics capabilities.
 
+## 📋 Table of Contents
+- [Features](#-features)
+- [Installation](#-installation)
+- [Configuration](#️-configuration)
+- [Usage](#️-usage)
+- [API Endpoints](#-api-endpoints)
+- [Frontend Architecture](#-frontend-architecture)
+- [Troubleshooting](#-troubleshooting)
+- [Support](#-support--feedback)
+
 ## 🚀 Features
 
 ### 📦 Order Management
@@ -439,13 +449,170 @@ We welcome contributions! Please follow these guidelines:
 - ✨ ENHANCEMENT: Better phone number validation for Bangladesh numbers.
 - ✨ ENHANCEMENT: Improved error logging and debugging for order operations.
 
-## 📄 License
+## 🐛 Troubleshooting
 
-This plugin is licensed under the [GPLv2 or later](https://www.gnu.org/licenses/gpl-2.0.html).
+### Audio Notification Not Playing
+**Problem**: Notification sound fails to play with error "NotAllowedError: play() failed because the user didn't interact with the document first"
 
-## 📢 Support & Feedback
+**Solution**: 
+- Ensure the user has interacted with the page (clicked, typed, etc.) before audio plays
+- Audio will automatically play after user interaction on subsequent notifications
+- Check browser autoplay policies in browser settings
+- Verify audio file path is correct in settings
 
-For support, feature requests, or bug reports, please [open an issue](https://github.com/your-repo/woo-easy-life/issues) or contact us via the plugin dashboard.
+### Orders Not Loading
+**Problem**: Order list appears empty or loading indefinitely
 
-Thank you for using **WooEasyLife**!  
-Empowering WooCommerce store owners with advanced automation, analytics, and operational
+**Solution**:
+- Clear browser cache and reload the page
+- Check if WooCommerce is properly activated
+- Verify database connection and ensure custom tables are created
+- Check PHP error logs for database errors
+- Disable other caching plugins temporarily
+
+### Custom Fields Not Displaying
+**Problem**: Custom checkout fields not showing in order details
+
+**Solution**:
+- Ensure the custom field plugin (CartFlows, Checkout Manager, etc.) is active
+- Verify custom fields are configured in checkout
+- Clear cache and reload the page
+- Check if custom field keys are properly saved in order metadata
+- Review browser console for JavaScript errors
+
+### Courier Integration Failing
+**Problem**: Cannot submit orders to courier service
+
+**Solution**:
+- Verify API credentials are correct in plugin settings
+- Ensure shipping address is complete (all required fields)
+- Check courier service status and API availability
+- Review API response in browser Network tab for specific errors
+- Ensure order total and COD amount are properly calculated
+
+### Bulk Operations Hanging
+**Problem**: Bulk status changes or courier submissions freeze
+
+**Solution**:
+- Reduce the number of orders processed at once (try 10-20 instead of 100+)
+- Increase PHP `max_execution_time` to 300 seconds
+- Check server memory usage during bulk operations
+- Clear browser console warnings/errors
+- Restart the operation with fewer orders
+
+### Device Block Not Working
+**Problem**: Device block returns "Invalid or empty payload"
+
+**Solution**:
+- Ensure selected orders have valid `customer_device_token` field
+- Some custom orders may not have device tokens
+- Check that at least one selected order has a device token
+- Verify the device block API endpoint is accessible
+- Review error logs for API response details
+
+### SMS/WhatsApp Not Sending
+**Problem**: Messages not delivering to customers
+
+**Solution**:
+- Verify SMS/WhatsApp API credentials in settings
+- Check customer phone numbers are in correct format (with country code)
+- Ensure SMS balance/quota is available
+- Check API endpoint configuration
+- Review SMS provider logs for delivery status
+- Test with a single order first before bulk operations
+
+### Performance Issues
+**Problem**: Dashboard slow or unresponsive
+
+**Solution**:
+- Reduce number of orders loaded per page (adjust in settings)
+- Enable object caching (Redis/Memcached)
+- Optimize database by running: `OPTIMIZE TABLE wp_woocommerce_order_items;`
+- Disable unnecessary order statuses
+- Update to latest plugin version
+- Check server CPU and memory resources
+
+### White Screen / 500 Error
+**Problem**: Admin page shows blank or 500 error
+
+**Solution**:
+- Check PHP error logs: `wp-content/debug.log`
+- Verify PHP version compatibility (7.4+)
+- Disable all other plugins except WooCommerce
+- Increase PHP memory limit to 256MB or more
+- Reactivate the plugin
+- Check file permissions on plugin directory
+
+### CORS Errors in Frontend
+**Problem**: JavaScript console shows CORS policy errors
+
+**Solution**:
+- Plugin includes built-in CORS headers (automatically handled)
+- Check if reverse proxy/firewall is stripping headers
+- Verify REST API is enabled in WordPress settings
+- Clear browser cache and hard reload (Cmd+Shift+R)
+- Check browser Network tab for response headers
+
+## 🆘 Common Issues & Solutions
+
+| Issue | Cause | Solution |
+|-------|-------|----------|
+| Orders not syncing | API connection | Check API credentials and internet connection |
+| High CPU usage | Too many orders loaded | Reduce page size or optimize database queries |
+| Custom fields not saving | Plugin conflict | Disable conflicting plugins and test |
+| Courier submission fails | Invalid data | Verify shipping address and payment method |
+| Notification sound fails | Browser autoplay policy | Interact with page first, check browser settings |
+
+## 📚 Additional Resources
+
+- **[WordPress Plugin Repository](https://wordpress.org/plugins/)** - Official WordPress plugins
+- **[WooCommerce Documentation](https://woocommerce.com/documentation/)** - WooCommerce guides
+- **[Vue.js Documentation](https://vuejs.org/)** - Vue.js framework docs
+- **[TypeScript Handbook](https://www.typescriptlang.org/docs/)** - TypeScript reference
+- **[REST API Handbook](https://developer.wordpress.org/rest-api/)** - WordPress REST API
+
+## 💡 Tips & Best Practices
+
+### For Store Managers
+- ✅ Always verify order details before submitting to courier
+- ✅ Set up automated courier submissions for faster processing
+- ✅ Use order filters to find problematic orders quickly
+- ✅ Enable fraud detection for high-value orders
+- ✅ Schedule bulk operations during off-peak hours
+
+### For Developers
+- ✅ Use TypeScript for type safety
+- ✅ Follow WordPress coding standards
+- ✅ Test API endpoints with Postman before integration
+- ✅ Use dependency injection for better code organization
+- ✅ Enable debug mode during development: `define('WP_DEBUG', true);`
+
+## 🔐 Security Best Practices
+
+- **API Keys**: Store API keys in environment variables, not in code
+- **CORS**: Plugin includes CORS protection by default
+- **Permissions**: Always check user capabilities before performing actions
+- **Input Validation**: All inputs are validated and sanitized
+- **SQL Injection**: Uses prepared statements to prevent SQL injection
+- **XSS Protection**: All output is properly escaped
+
+## 📧 Contact & Support
+
+- **Report Issues**: [GitHub Issues](https://github.com/your-repo/woo-easy-life/issues)
+- **Feature Requests**: [GitHub Discussions](https://github.com/your-repo/woo-easy-life/discussions)
+- **Email Support**: support@wooeasylife.com
+- **Documentation Wiki**: [GitHub Wiki](https://github.com/your-repo/woo-easy-life/wiki)
+- **Community Forum**: Join our community discussion board
+
+## 🌟 Credits
+
+WooEasyLife is maintained by the community. Special thanks to:
+- WooCommerce team for the excellent eCommerce platform
+- Vue.js community for the progressive framework
+- All contributors and testers who help improve this plugin
+
+---
+
+**⭐ If you find this plugin helpful, please consider leaving a [5-star review](https://wordpress.org/support/plugin/woo-easy-life/reviews/) on WordPress.org!**
+
+Last Updated: January 3, 2026

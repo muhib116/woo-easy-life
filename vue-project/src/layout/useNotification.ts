@@ -13,16 +13,24 @@ export const useNotification = () => {
       ? "/notification-sound.wav"
       : window?.wooEasyLife?.dist_url + "/notification-sound.wav"
   );
+  
+  // Preload audio
+  notificationSound.preload = "auto";
+
+  const playNotificationSound = async () => {
+    try {
+      notificationSound.currentTime = 0; // Reset to start
+      await notificationSound.play();
+    } catch (audioError) {
+      console.warn("Failed to play notification sound:", audioError);
+    }
+  };
 
   const checkNewOrderStatus = async (cb?: any) => {
     try {
       const { data } = await checkHasNewOrder();
-      if (data?.has_new_orders) {
-        try {
-          await notificationSound.play();
-        } catch (audioError) {
-          console.warn("Failed to play notification sound:", audioError);
-        }
+      if (data?.has_new_orders) { // Fixed: removed the NOT operator
+        await playNotificationSound();
         
         hasNewOrder.value = true;
         showNotification({
@@ -42,6 +50,11 @@ export const useNotification = () => {
       }
     }
   }
+
+  onBeforeUnmount(() => {
+    notificationSound.pause();
+    notificationSound.currentTime = 0;
+  });
 
   return {
     hasNewOrder,

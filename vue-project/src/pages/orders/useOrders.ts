@@ -25,8 +25,7 @@ import { storeBulkRecordsInToOrdersMeta } from "@/api/courier";
 import { useRoute } from "vue-router";
 import {
     shippingMethods, 
-    paymentMethods,
-    configData
+    paymentMethods
 } from "@/storage"
 
 export const useOrders = () => {
@@ -748,7 +747,7 @@ export const useOrders = () => {
     }
   }
 
-  const handleLabelPrint = (invoiceLogo, btn) => {
+  const handleLabelPrint = (invoiceLogo, btn, invoice_theme) => {
     if (orders.value.length === 0) {
       showNotification({
         type: 'warning',
@@ -777,7 +776,7 @@ export const useOrders = () => {
           await markAsDone(order, btn)
           index++;
           printNextOrder();
-        }, invoiceLogo, configData.invoice_theme);
+        }, invoiceLogo, invoice_theme);
       }
     };
 

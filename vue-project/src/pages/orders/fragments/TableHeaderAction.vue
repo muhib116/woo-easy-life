@@ -154,7 +154,7 @@
             bg: '#1d9c82',
             color: '#fff',
             method: (btn) => {
-                handleLabelPrint(configData.value.invoice_logo, btn)
+                handleLabelPrint(configData.value.invoice_logo, btn, configData.value.invoice_theme)
             }
         },
         {

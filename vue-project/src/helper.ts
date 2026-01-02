@@ -489,7 +489,7 @@ export const printProductDetails = (order: any, cb: () => void, invoice_logo: st
     const printWindow = window.open("", "");
     if (printWindow && printWindow?.document) {
         const htmlContent = pos_theme[invoice_theme as keyof typeof pos_theme](order, invoice_logo, qrUrl, formatInvoice);
-        
+        // console.log(htmlContent)
         printWindow?.document.write(htmlContent);
         printWindow?.document.close();
 

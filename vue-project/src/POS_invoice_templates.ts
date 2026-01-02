@@ -509,14 +509,14 @@ export const sticker_3x3Paper = (order: any, invoice_logo: string, qrUrl: string
 
                 .recipient-name {
                     font-size: 16px;
-                    font-weight: 500;
+                    font-weight: 600;
                     color: #000;
                     line-height: 1.1;
                 }
 
                 .contact-number {
                     font-size: 16px;
-                    font-weight: 500;
+                    font-weight: 600;
                     color: #000;
                 }
 
@@ -531,11 +531,12 @@ export const sticker_3x3Paper = (order: any, invoice_logo: string, qrUrl: string
                     height: 120px; 
                     display: block;
                     margin: 0 auto;
+                    flex-shrink: 0;
                 }
 
                 .scan-text {
                     background-color: #000;
-                    font-size: 13px;
+                    font-size: 14px;
                     color: #fff;
                     margin-top: 4px;
                     padding: 2px 6px;
@@ -544,12 +545,12 @@ export const sticker_3x3Paper = (order: any, invoice_logo: string, qrUrl: string
                     margin-left: auto;
                     margin-right: auto;
                     display: block;
-                    font-weight: 500;
+                    font-weight: 700;
                     letter-spacing: 0.5px;
                 }
 
                 .footer {
-                    padding: 8px 4px 8px 6px;
+                    padding: 4px 4px 8px 6px;
                     text-align: center;
                     font-size: 14px;
                     color: #000;

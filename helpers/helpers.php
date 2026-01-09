@@ -9,62 +9,105 @@
  * @return string|false The real IP address of the user, or false if it cannot be determined.
  */
 function get_customer_ip() {
-    // Define a list of trusted proxy IP addresses. 
-    // This is crucial if your site is behind a reverse proxy (e.g., Varnish, Nginx).
-    // For most sites, especially those using Cloudflare, this can be left empty.
+    // Common trusted proxy IP ranges (Cloudflare, localhost for testing)
     $trusted_proxies = [
-        // '192.168.1.1', // Example: Add your own proxy IP here if needed.
+        '127.0.0.1',
+        '173.245.48.0/20', '103.21.244.0/22', '103.22.200.0/22', '103.31.4.0/22',
+        '141.101.64.0/18', '108.162.192.0/18', '190.93.240.0/20', '188.114.96.0/20',
+        '197.234.240.0/22', '198.41.128.0/17', '162.158.0.0/15', '104.16.0.0/13',
+        '104.24.0.0/14', '172.64.0.0/13', '131.0.72.0/22'
     ];
 
-    // The IP address of the machine making the direct request to the server.
     $remote_addr = isset($_SERVER['REMOTE_ADDR']) ? sanitize_text_field(wp_unslash($_SERVER['REMOTE_ADDR'])) : '';
 
-    // 1. Check for Cloudflare's IP header first - this is highly reliable.
-    if (isset($_SERVER['HTTP_CF_CONNECTING_IP'])) {
-        $ip = sanitize_text_field(wp_unslash($_SERVER['HTTP_CF_CONNECTING_IP']));
-        if (filter_var($ip, FILTER_VALIDATE_IP)) {
-            return $ip;
+    // Helper to check if IP is in trusted list (supports CIDR)
+    function ip_in_trusted($ip, $trusted_proxies) {
+        foreach ($trusted_proxies as $proxy) {
+            if (strpos($proxy, '/') !== false) {
+                // CIDR notation
+                list($subnet, $bits) = explode('/', $proxy);
+                $ip_bin = ip2long($ip);
+                $subnet_bin = ip2long($subnet);
+                $mask = -1 << (32 - $bits);
+                if (($ip_bin & $mask) == ($subnet_bin & $mask)) return true;
+            } else {
+                if ($ip === $proxy) return true;
+            }
+        }
+        return false;
+    }
+
+    // If request is from a trusted proxy, check headers
+    if (ip_in_trusted($remote_addr, $trusted_proxies)) {
+        if (isset($_SERVER['HTTP_CF_CONNECTING_IP']) && filter_var($_SERVER['HTTP_CF_CONNECTING_IP'], FILTER_VALIDATE_IP)) {
+            return sanitize_text_field(wp_unslash($_SERVER['HTTP_CF_CONNECTING_IP']));
+        }
+        if (isset($_SERVER['HTTP_X_FORWARDED_FOR'])) {
+            $forwarded_ip = sanitize_text_field(wp_unslash($_SERVER['HTTP_X_FORWARDED_FOR']));
+            $ip_chain = array_map('trim', explode(',', $forwarded_ip));
+            $client_ip = $ip_chain[0];
+            if (filter_var($client_ip, FILTER_VALIDATE_IP)) {
+                return $client_ip;
+            }
+        }
+        if (isset($_SERVER['HTTP_X_REAL_IP']) && filter_var($_SERVER['HTTP_X_REAL_IP'], FILTER_VALIDATE_IP)) {
+            return sanitize_text_field(wp_unslash($_SERVER['HTTP_X_REAL_IP']));
+        }
+        if (isset($_SERVER['HTTP_CLIENT_IP']) && filter_var($_SERVER['HTTP_CLIENT_IP'], FILTER_VALIDATE_IP)) {
+            return sanitize_text_field(wp_unslash($_SERVER['HTTP_CLIENT_IP']));
         }
     }
 
-    // 2. Check for X-Forwarded-For header.
-    if (isset($_SERVER['HTTP_X_FORWARDED_FOR'])) {
-        $forwarded_ip = sanitize_text_field(wp_unslash($_SERVER['HTTP_X_FORWARDED_FOR']));
-        $ip_chain = array_map('trim', explode(',', $forwarded_ip));
-        
-        // The first IP in the chain is the original client IP.
-        $client_ip = $ip_chain[0];
-
-        // Trust the X-Forwarded-For header ONLY IF:
-        // a) The direct connection is from a trusted proxy, OR
-        // b) We are not configured with any trusted proxies (common scenario for shared hosting).
-        if (filter_var($client_ip, FILTER_VALIDATE_IP) && (empty($trusted_proxies) || in_array($remote_addr, $trusted_proxies, true))) {
-            return $client_ip;
-        }
-    }
-
-    // 3. Check for other common proxy headers.
-    if (isset($_SERVER['HTTP_X_REAL_IP'])) {
-        $ip = sanitize_text_field(wp_unslash($_SERVER['HTTP_X_REAL_IP']));
-        if (filter_var($ip, FILTER_VALIDATE_IP)) {
-            return $ip;
-        }
-    }
-    
-    if (isset($_SERVER['HTTP_CLIENT_IP'])) {
-        $ip = sanitize_text_field(wp_unslash($_SERVER['HTTP_CLIENT_IP']));
-        if (filter_var($ip, FILTER_VALIDATE_IP)) {
-            return $ip;
-        }
-    }
-
-    // 4. If all else fails, fall back to REMOTE_ADDR.
-    // This is the least reliable when behind a proxy but the only option if headers are missing.
+    // For regular requests, use REMOTE_ADDR
     if (filter_var($remote_addr, FILTER_VALIDATE_IP)) {
         return $remote_addr;
     }
 
-    return false; // Return false if no valid IP could be found.
+    return false;
+}
+
+/**
+ * Detects if an IP address is likely a proxy or VPN.
+ * Returns true if detected, false otherwise.
+ */
+function is_proxy_or_vpn($ip) {
+    // 1. Check for private/reserved IP ranges
+    $private_ranges = [
+        '10.', '127.', '169.254.', '172.16.', '172.17.', '172.18.', '172.19.',
+        '172.20.', '172.21.', '172.22.', '172.23.', '172.24.', '172.25.', '172.26.',
+        '172.27.', '172.28.', '172.29.', '172.30.', '172.31.', '192.168.'
+    ];
+    foreach ($private_ranges as $range) {
+        if (strpos($ip, $range) === 0) return true;
+    }
+
+    // 2. Check for suspicious proxy headers (from untrusted sources)
+    $proxy_headers = [
+        'HTTP_VIA', 'HTTP_X_FORWARDED_FOR', 'HTTP_FORWARDED', 'HTTP_X_REAL_IP',
+        'HTTP_CLIENT_IP', 'HTTP_FORWARDED_FOR', 'HTTP_PROXY_CONNECTION'
+    ];
+    foreach ($proxy_headers as $header) {
+        if (isset($_SERVER[$header]) && !empty($_SERVER[$header])) {
+            return true;
+        }
+    }
+
+    // 3. Check ASN/Provider (basic, not bulletproof)
+    $hostname = gethostbyaddr($ip);
+    if ($hostname !== $ip) {
+        $datacenter_keywords = [
+            'amazonaws', 'google', 'digitalocean', 'linode', 'ovh', 'azure',
+            'cloud', 'vultr', 'hetzner', 'server', 'host', 'colo'
+        ];
+        foreach ($datacenter_keywords as $keyword) {
+            if (stripos($hostname, $keyword) !== false) return true;
+        }
+    }
+
+    // 4. Optionally, block known Tor exit nodes (requires a list)
+    // You can maintain a list of Tor exit node IPs and check against it.
+
+    return false; // Not detected as proxy/VPN
 }
 
 function get_geolocation_info($ip) {

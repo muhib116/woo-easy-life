@@ -80,5 +80,12 @@ const routes = [
     title: "Marketing Tools",
     iconName: "PhCode",
   },
+  {
+    to: {
+      name: "metaAiBot",
+    },
+    title: "Meta AI Bot",
+    iconName: "PhRobot",
+  },
 ];
 </script>

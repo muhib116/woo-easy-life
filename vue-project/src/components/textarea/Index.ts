@@ -1,5 +1,9 @@
 import Native from "./Native.vue"
+import Primary from "./ui/Primary.vue"
 
-export default {
-    Native
+const Textarea = {
+    Native,
+    Primary,
 }
+
+export default Textarea

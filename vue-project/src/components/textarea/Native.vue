@@ -17,6 +17,7 @@
             ></span>
             <div class="flex z-10 items-center gap-2 w-full relative">
                 <Button.Native
+                    v-if="!hideMicrophone"
                     class="absolute z-10 bg-gray-200 right-[6px] bottom-[6px] size-[25px] grid place-content-center rounded-full opacity-50 hover:opacity-100"
                     @click="handleVoiceToText"
                     :loading="isRecognizing"
@@ -32,6 +33,7 @@
                     v-bind="$attrs"
                     :id="uid"
                     class="relative placeholder:text-inherit placeholder:opacity-60 !border !border-secondary-five rounded-sm px-4 py-2 block w-full disabled:bg-gray-100 disabled:opacity-60 focus:ring-0 focus:outline-none"
+                    :class="inputClass"
                     :style="inputStyle"
                 />
             </div>
@@ -64,7 +66,8 @@
         inputStyle: Object,
         bgStyle: Object,
         inputClass: String,
-        label: String
+        label: String,
+        hideMicrophone: Boolean
     })
     const uid = computed(() => attrs?.id || `component_id_${instance.uid}`)
 

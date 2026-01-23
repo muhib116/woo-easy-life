@@ -21,6 +21,7 @@ import MarketingTools from "@/pages/config/marketing-tools/Index.vue";
 import middleware from "./middleware";
 import OpenAiView from '@/openAi/Index.vue'
 import NotFound from '@/pages/404NotFound/Index.vue'
+import MetaAiBot from '@/pages/config/MetaAiBot/Index.vue'
 
 const router = createRouter({
   history: createWebHashHistory(),
@@ -104,6 +105,11 @@ const router = createRouter({
           path: "marketing-tools",
           name: "marketingTools",
           component: MarketingTools,
+        },
+        {
+          path: "meta-ai-bot",
+          name: "metaAiBot",
+          component: MetaAiBot,
         },
       ],
     },

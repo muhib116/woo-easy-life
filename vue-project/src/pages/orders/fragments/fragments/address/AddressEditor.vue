@@ -70,7 +70,6 @@ import { normalizePhoneNumber, validateBDPhoneNumber } from '@/helper';
 
     const {
         handleAddressEdit
-        
     } = inject('useAddress')
 
     const isEditable = ref(false)

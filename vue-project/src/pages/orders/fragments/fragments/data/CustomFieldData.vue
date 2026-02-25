@@ -1,6 +1,6 @@
 <template>
     <div
-        v-if="order?.customFieldData"
+        v-if="!order?.customFieldData"
         class="relative"
         v-click-outside="() => toggleCartFlowFieldsData ? toggleCartFlowFieldsData = false : null"
     >
@@ -20,7 +20,7 @@
             <div class="divide-y">
                 <div
                     class="flex items-center justify-between gap-2 py-1"
-                    v-for="(value, key) in order?.customFieldData" 
+                    v-for="(value, key) in order?.customFieldData || {phone: 'N/A'}" 
                     :key="key"
                 >
                     <span class="flex-1 text-sm">{{ value }}</span>
@@ -59,6 +59,13 @@
                                 <Icon name="PhUser" size="16" />
                                 Save as<br/>Customer Note
                             </Button.Native>
+                            <Button.Native
+                                @onClick="(btn: any) => handleSave(btn, order, value, 'concatenate_to_address', key)"
+                                class="w-full text-left px-3 py-2 hover:bg-gray-100 text-sm flex items-center gap-2"
+                            >
+                                <Icon name="PhUser" size="16" />
+                                Concatenate to<br/>Customer address
+                            </Button.Native>
                         </div>
                     </div>
                 </div>
@@ -69,18 +76,37 @@
 
 <script setup lang="ts">
     import { Icon, Button } from '@/components'
-    import { ref, reactive } from 'vue'
+    import { ref, reactive, inject } from 'vue'
     import { saveOrderNote } from '@/api'
     import { toast } from 'vue3-toastify'
+    import { useAddress } from '../address/useAddress'
 
     const props = defineProps<{
         order: any
     }>()
     const toggleCartFlowFieldsData = ref(false);
     const activeDropdown = reactive<Record<string | number, boolean>>({});
+    const {
+        handleAddressEdit
+    } = useAddress()
 
-    const handleSave = async (btn: any, order: any, value: string, noteType: 'courier_note' | 'invoice_note' | 'customer_note', key: string | number) => {
+    const handleSave = async (btn: any, order: any, value: string, noteType: 'courier_note' | 'invoice_note' | 'customer_note' | 'concatenate_to_address', key: string | number) => {
         // Prepare payload with the selected note type updated
+        if (noteType === 'concatenate_to_address') {
+            // Handle concatenation to address logic
+            const currentBillingAddress = order.billing_address?.address_2 || ''
+            const currentShippingAddress = order.shipping_address?.address_2 || ''
+            const newBillingAddress = currentBillingAddress ? `${currentBillingAddress}\n${value}` : value
+            const newShippingAddress = currentShippingAddress ? `${currentShippingAddress}\n${value}` : value
+
+            order.billing_address.address_2 = newBillingAddress
+            order.shipping_address.address_2 = newShippingAddress
+            // now update the address in the backend, you can create a new API function for this or reuse an existing one
+            await handleAddressEdit(order.billing_address)
+            await handleAddressEdit(order.shipping_address)
+            return
+        }
+
         const payload = {
             order_id: order.id,         
             courier_note: noteType === 'courier_note' 

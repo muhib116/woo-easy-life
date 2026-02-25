@@ -63,8 +63,8 @@
                                 @onClick="(btn: any) => handleSave(btn, order, value, 'concatenate_to_address', key)"
                                 class="w-full text-left px-3 py-2 hover:bg-gray-100 text-sm flex items-center gap-2"
                             >
-                                <Icon name="PhUser" size="16" />
-                                Concatenate to<br/>Customer address
+                                <Icon name="PhMapPinSimpleLine" size="16" />
+                                Add to<br/>Address
                             </Button.Native>
                         </div>
                     </div>
@@ -102,9 +102,19 @@
             order.billing_address.address_2 = newBillingAddress
             order.shipping_address.address_2 = newShippingAddress
             // now update the address in the backend, you can create a new API function for this or reuse an existing one
-            await handleAddressEdit(order.billing_address)
-            await handleAddressEdit(order.shipping_address)
-            return
+
+            try {
+                btn.isLoading = true
+                await handleAddressEdit(order.billing_address)
+                await handleAddressEdit(order.shipping_address)
+                return
+            } finally {
+                btn.isLoading = false
+
+                toggleCartFlowFieldsData.value = false
+                // Close the dropdown
+                activeDropdown[key] = false
+            }
         }
 
         const payload = {
@@ -135,6 +145,7 @@
             console.error('Error saving note:', error)
         } finally {
             btn.isLoading = false
+            toggleCartFlowFieldsData.value = false
             // Close the dropdown
             activeDropdown[key] = false
         }

@@ -415,6 +415,12 @@ function getCustomerSuccessRate($billing_phone) {
 
 function get_block_data_by_type($value, $type = 'phone_number') {
     global $wpdb;
+    
+    // Check if value is empty
+    if (empty($value)) {
+        return false;
+    }
+    
     $table_name = $wpdb->prefix . __PREFIX . 'block_list'; // Adjusted to match standard table prefix
 
     // Validate the type to prevent SQL injection
@@ -423,17 +429,32 @@ function get_block_data_by_type($value, $type = 'phone_number') {
         return false; // Invalid type
     }
 
-    // Normalize the phone number if the type is 'phone_number'
-    $value = $type === 'phone_number' ? normalize_phone_number(trim($value)) : trim($value);
+    // Normalize the value based on type
+    $value = trim($value);
+    
+    if ($type === 'phone_number') {
+        $value = normalize_phone_number($value);
+    }
 
-    // Query to check if the value exists in the block list
-    $query = $wpdb->prepare(
-        "SELECT 1 FROM {$table_name} WHERE type = %s AND REPLACE(REPLACE(REPLACE(ip_phone_or_email, '+880', '0'), '-', ''), ' ', '') = %s",
-        $type,
-        $value
-    );
+    // Build query with type-specific handling
+    if ($type === 'phone_number') {
+        // For phone numbers, apply REPLACE operations to normalize stored format
+        $query = $wpdb->prepare(
+            "SELECT 1 FROM {$table_name} WHERE type = %s AND REPLACE(REPLACE(REPLACE(ip_phone_or_email, '+880', '0'), '-', ''), ' ', '') = %s LIMIT 1",
+            $type,
+            $value
+        );
+    } else {
+        // For other types (ip, email, device_token), do direct comparison
+        $query = $wpdb->prepare(
+            "SELECT 1 FROM {$table_name} WHERE type = %s AND ip_phone_or_email = %s LIMIT 1",
+            $type,
+            $value
+        );
+    }
 
-    return (bool) $wpdb->get_var($query); // Return true if a match is found
+    $result = $wpdb->get_var($query);
+    return (bool) $result; // Return true if a match is found
 }
 
 

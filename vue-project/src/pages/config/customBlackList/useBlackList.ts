@@ -10,32 +10,47 @@ export const useBlackList = () => {
         message: '',
         type: ''
     })
-    const blackListData = ref([])
+    const blackListData = ref<any[]>([])
 
-    const loadBlackListData = async () => {
+    // Pagination state
+    const currentPage = ref(1)
+    const perPage = ref(20)
+    const totalEntries = ref(0)
+    const totalPages = ref(0)
+
+    const loadBlackListData = async (page: number = 1, itemsPerPage: number = 20) => {
         try {
             isLoading.value = true
-            const { data } = await getBlockListData()
-            blackListData.value = data
+            const response = await getBlockListData({
+                page,
+                per_page: itemsPerPage
+            })
+            blackListData.value = response.data || []
+
+            // Update pagination info
+            if (response.pagination) {
+                currentPage.value = response.pagination.current_page
+                perPage.value = response.pagination.per_page
+                totalEntries.value = response.pagination.total
+                totalPages.value = response.pagination.total_pages
+            }
         } finally {
             isLoading.value = false
         }
     }
 
-    const removeFromBlacklist = async (id: string | number, btn) => {
+    const removeFromBlacklist = async (id: string | number, btn: any) => {
         if (!confirm("Are you sure to remove?")) return
         try {
             isLoading.value = true
             btn.isLoading = true
-            const { data } = await deleteBlockListData(id)
-            blackListData.value = data
-            await loadBlackListData()
+            await deleteBlockListData(id)
+            await loadBlackListData(currentPage.value, perPage.value)
         } finally {
             isLoading.value = false
             btn.isLoading = false
         }
     }
-
 
     const toggleSelectAll = () => {
         blackListData.value.forEach(item => {
@@ -62,10 +77,10 @@ export const useBlackList = () => {
 
         try {
             isLoading.value = true
-            await Promise.all(selectedIds.map(async id => {
+            await Promise.all(selectedIds.map(async (id: any) => {
                 await deleteBlockListData(id)
             }))
-            await loadBlackListData()
+            await loadBlackListData(currentPage.value, perPage.value)
             alertMessage.value = {
                 message: 'Selected items removed successfully.',
                 type: 'success'
@@ -81,7 +96,31 @@ export const useBlackList = () => {
     }
 
     const hasSelectedItems = () => {
-        return blackListData.value.some(item => item.isSelected)
+        return blackListData.value.some((item: any) => item.isSelected)
+    }
+
+    const goToPage = async (page: number) => {
+        if (page >= 1 && page <= totalPages.value) {
+            await loadBlackListData(page, perPage.value)
+        }
+    }
+
+    const nextPage = async () => {
+        if (currentPage.value < totalPages.value) {
+            await goToPage(currentPage.value + 1)
+        }
+    }
+
+    const prevPage = async () => {
+        if (currentPage.value > 1) {
+            await goToPage(currentPage.value - 1)
+        }
+    }
+
+    const changePerPage = async (newPerPage: number) => {
+        if (newPerPage >= 1 && newPerPage <= 100) {
+            await loadBlackListData(1, newPerPage)
+        }
     }
 
     const handleExport = async () => {
@@ -158,7 +197,7 @@ export const useBlackList = () => {
                     }
 
                     // Reload blacklist data
-                    await loadBlackListData()
+                    await loadBlackListData(currentPage.value, perPage.value)
                 } catch (parseError: any) {
                     alertMessage.value = {
                         message: parseError?.response?.data?.message || 'Error importing blacklist.',
@@ -181,7 +220,7 @@ export const useBlackList = () => {
     }
 
     onMounted(() => {
-        loadBlackListData()
+        loadBlackListData(1, 20)
     })
 
     return {
@@ -189,11 +228,20 @@ export const useBlackList = () => {
         blackListData,
         alertMessage,
         selectAll,
+        currentPage,
+        perPage,
+        totalEntries,
+        totalPages,
         removeFromBlacklist,
         handleBulkDelete,
         toggleSelectAll,
         hasSelectedItems,
         handleExport,
-        handleImport
+        handleImport,
+        goToPage,
+        nextPage,
+        prevPage,
+        changePerPage,
+        loadBlackListData
     }
 }

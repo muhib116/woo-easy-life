@@ -10,13 +10,13 @@
         />
         <div class="mb-2 flex items-center justify-between">
             <h3 class="font-semibold text-gray-900 text-xl">
-                Blacklisted Customers
+                Blacklisted Data
             </h3>
 
             <div>
                 <div class="mr-4 flex items-center gap-3">
                     <span class="text-sm text-gray-600">
-                        Total: {{ blackListData?.length || 0 }}
+                        Total: {{ totalEntries }}
                     </span>
                     
                 </div>
@@ -84,12 +84,52 @@
             type="info"
             v-else-if="!isLoading"
         />
+
+        <!-- Pagination Section -->
+        <div v-if="blackListData?.length" class="mt-6 flex items-center justify-between px-4 py-4 border-t border-gray-200">
+            <!-- Left: Items Per Page -->
+            <div class="flex items-center gap-2">
+                <label for="perPage" class="text-sm font-medium text-gray-700">Items per page:</label>
+                <input
+                    id="perPage"
+                    type="number"
+                    :value="perPage"
+                    @change="changePerPage(Number($event.target.value))"
+                    min="1"
+                    max="100"
+                    class="w-16 px-2 py-1 border border-gray-300 rounded text-sm"
+                />
+            </div>
+
+            <!-- Center: Page Info -->
+            <div class="text-sm text-gray-600">
+                Page {{ currentPage }} of {{ totalPages }} ({{ totalEntries }} total)
+            </div>
+
+            <!-- Right: Pagination Buttons -->
+            <div class="flex items-center gap-2">
+                <Button.Native
+                    :disabled="currentPage <= 1 || isLoading"
+                    @onClick="prevPage"
+                    class="px-3 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors text-sm font-medium"
+                >
+                    ← Previous
+                </Button.Native>
+                <Button.Native
+                    :disabled="currentPage >= totalPages || isLoading"
+                    @onClick="nextPage"
+                    class="px-3 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors text-sm font-medium"
+                >
+                    Next →
+                </Button.Native>
+            </div>
+        </div>
     </Card.Native>
 </template>
 
 
 <script setup>
-    import { Table, MessageBox, Loader, Card, Button, Icon } from '@components'
+    import { Table, MessageBox, Loader, Card, Button, Icon } from '@/components'
     import { useBlackList } from './useBlackList'
     import { provide, ref } from 'vue'
     import TableTrow from './fragment/TableRow.vue'
@@ -100,11 +140,18 @@
         selectAll,
         blackListData,
         alertMessage,
+        currentPage,
+        perPage,
+        totalEntries,
+        totalPages,
         handleBulkDelete,
         toggleSelectAll,
         hasSelectedItems,
         handleExport,
-        handleImport
+        handleImport,
+        nextPage,
+        prevPage,
+        changePerPage
     } = _useBlackList
 
     provide('useBlackList', _useBlackList)

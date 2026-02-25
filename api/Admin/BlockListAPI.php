@@ -77,25 +77,63 @@ class BlockListAPI extends WP_REST_Controller {
     }
 
     /**
-     * Get all blocked entries
+     * Get all blocked entries with pagination support
      */
-    public function get_all_blocked_entries() {
+    public function get_all_blocked_entries(WP_REST_Request $request) {
         global $wpdb;
 
-        $results = $wpdb->get_results("SELECT * FROM {$this->table_name} ORDER BY id DESC", ARRAY_A);
+        // Get pagination parameters
+        $page = $request->get_param('page') ? intval($request->get_param('page')) : 1;
+        $per_page = $request->get_param('per_page') ? intval($request->get_param('per_page')) : 10;
+        
+        // Validate pagination parameters
+        if ($page < 1) $page = 1;
+        if ($per_page < 1) $per_page = 10;
+        if ($per_page > 100) $per_page = 100; // Max 100 items per page
+
+        // Calculate offset
+        $offset = ($page - 1) * $per_page;
+
+        // Get total count
+        $total = $wpdb->get_var("SELECT COUNT(*) FROM {$this->table_name}");
+
+        // Get paginated results
+        $results = $wpdb->get_results(
+            $wpdb->prepare(
+                "SELECT * FROM {$this->table_name} ORDER BY id DESC LIMIT %d OFFSET %d",
+                $per_page,
+                $offset
+            ),
+            ARRAY_A
+        );
 
         if (empty($results)) {
             return new WP_REST_Response([
                 'status'  => 'success',
                 'message' => 'No blocked entries found.',
                 'data'    => [],
+                'pagination' => [
+                    'total'       => 0,
+                    'per_page'    => $per_page,
+                    'current_page' => $page,
+                    'total_pages' => 0,
+                ],
             ], 200);
         }
+
+        // Calculate total pages
+        $total_pages = ceil($total / $per_page);
 
         return new WP_REST_Response([
             'status'  => 'success',
             'message' => 'Blocked entries retrieved successfully.',
             'data'    => $results,
+            'pagination' => [
+                'total'       => (int)$total,
+                'per_page'    => $per_page,
+                'current_page' => $page,
+                'total_pages' => (int)$total_pages,
+            ],
         ], 200);
     }
 

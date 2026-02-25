@@ -59,6 +59,21 @@ class BlockListAPI extends WP_REST_Controller {
                 'permission_callback' => api_permission_check(),
             ],
         ]);
+        register_rest_route(__API_NAMESPACE, '/block-list/export', [
+            [
+                'methods'             => 'GET',
+                'callback'            => [$this, 'export_blocked_entries'],
+                'permission_callback' => api_permission_check(),
+            ],
+        ]);
+        register_rest_route(__API_NAMESPACE, '/block-list/import', [
+            [
+                'methods'             => 'POST',
+                'callback'            => [$this, 'import_blocked_entries'],
+                'permission_callback' => api_permission_check(),
+            ],
+        ]);
+        
     }
 
     /**
@@ -470,5 +485,229 @@ class BlockListAPI extends WP_REST_Controller {
                 ],
             ]
         ];
+    }
+
+    /**
+     * Export all blocked entries as CSV
+     * 
+     * Returns CSV with headers: Phone/Email/IP/Device,Type,Blocked At,Customer ID
+     * Each row contains: ip_phone_or_email,type,created_at,customer_id
+     */
+    public function export_blocked_entries() {
+        global $wpdb;
+
+        $results = $wpdb->get_results("SELECT id, customer_id, type, ip_phone_or_email, created_at, updated_at FROM {$this->table_name} ORDER BY id DESC", ARRAY_A);
+
+        if (empty($results)) {
+            return new WP_REST_Response([
+                'status'  => 'error',
+                'message' => 'No data to export.',
+            ], 400);
+        }
+
+        // Prepare CSV data with proper headers matching database fields
+        $csv_data = [];
+        $csv_data[] = 'id,customer_id,type,ip_phone_or_email,created_at,updated_at'; // CSV Header
+
+        foreach ($results as $row) {
+            $id = $row['id'] ?? '';
+            $customer_id = $row['customer_id'] ?? '';
+            $type = $row['type'] ?? '';
+            $ip_phone_or_email = $row['ip_phone_or_email'] ?? '';
+            $created_at = $row['created_at'] ?? '';
+            $updated_at = $row['updated_at'] ?? '';
+
+            // Escape commas and quotes in CSV
+            $id = $this->escape_csv_field($id);
+            $customer_id = $this->escape_csv_field($customer_id);
+            $type = $this->escape_csv_field($type);
+            $ip_phone_or_email = $this->escape_csv_field($ip_phone_or_email);
+            $created_at = $this->escape_csv_field($created_at);
+            $updated_at = $this->escape_csv_field($updated_at);
+
+            $csv_data[] = "{$id},{$customer_id},{$type},{$ip_phone_or_email},{$created_at},{$updated_at}";
+        }
+
+        $csv_content = implode("\n", $csv_data);
+
+        return new WP_REST_Response([
+            'status'  => 'success',
+            'message' => 'Blacklist exported successfully.',
+            'data'    => $csv_content,
+            'filename' => 'blacklist_export_' . current_time('timestamp') . '.csv',
+            'count'   => count($results),
+        ], 200);
+    }
+
+    /**
+     * Import blocked entries from CSV data
+     * 
+     * Expected CSV format (matching database fields):
+     * id,customer_id,type,ip_phone_or_email,created_at,updated_at
+     * 1,0,email,xakequnyg@mailinator.com,2026-02-26 03:52:14,2026-02-26 03:52:14
+     * 2,0,ip,::1,2026-02-26 03:52:14,2026-02-26 03:52:14
+     */
+    public function import_blocked_entries(WP_REST_Request $request) {
+        global $wpdb;
+
+        $csv_content = $request->get_param('csv_content');
+
+        if (empty($csv_content)) {
+            return new WP_REST_Response([
+                'status'  => 'error',
+                'message' => 'CSV content is empty.',
+            ], 400);
+        }
+
+        $lines = explode("\n", $csv_content);
+
+        if (count($lines) < 2) {
+            return new WP_REST_Response([
+                'status'  => 'error',
+                'message' => 'CSV file is empty or invalid.',
+            ], 400);
+        }
+
+        $imported_count = 0;
+        $skipped_count = 0;
+        $errors = [];
+
+        // Skip header row (line 0)
+        for ($i = 1; $i < count($lines); $i++) {
+            $line = trim($lines[$i]);
+
+            if (empty($line)) {
+                continue;
+            }
+
+            // Parse CSV line expecting 6 columns
+            $parts = str_getcsv($line);
+
+            if (count($parts) < 4) {
+                $skipped_count++;
+                $errors[] = "Row " . ($i + 1) . ": Invalid format. Expected at least 4 columns.";
+                continue;
+            }
+
+            // Extract columns from CSV (id, customer_id, type, ip_phone_or_email, created_at, updated_at)
+            // Skip id - it will auto-increment
+            $customer_id = isset($parts[1]) ? intval(sanitize_text_field(trim($parts[1]))) : 0;
+            $type = sanitize_text_field(trim($parts[2]));
+            $ip_phone_or_email = sanitize_text_field(trim($parts[3]));
+            
+            // Optional: get created_at from CSV (5th column) or use current time
+            $created_at = isset($parts[4]) && !empty(trim($parts[4])) 
+                ? sanitize_text_field(trim($parts[4]))
+                : current_time('mysql');
+            
+            // Optional: get updated_at from CSV (6th column) or use current time
+            $updated_at = isset($parts[5]) && !empty(trim($parts[5])) 
+                ? sanitize_text_field(trim($parts[5]))
+                : current_time('mysql');
+
+            // Validate required fields
+            if (empty($type) || empty($ip_phone_or_email)) {
+                $skipped_count++;
+                $errors[] = "Row " . ($i + 1) . ": Missing type or IP/phone/email/device";
+                continue;
+            }
+
+            // Validate type enum
+            $valid_types = ['ip', 'phone_number', 'email', 'device_token'];
+            if (!in_array($type, $valid_types)) {
+                $skipped_count++;
+                $errors[] = "Row " . ($i + 1) . ": Invalid type '{$type}'. Must be one of: " . implode(', ', $valid_types);
+                continue;
+            }
+
+            // Validate date format if provided
+            if (!$this->is_valid_datetime($created_at)) {
+                $skipped_count++;
+                $errors[] = "Row " . ($i + 1) . ": Invalid datetime format '{$created_at}'";
+                continue;
+            }
+
+            // Check for uniqueness by ip_phone_or_email field only
+            $existing_record = $wpdb->get_row(
+                $wpdb->prepare(
+                    "SELECT id FROM {$this->table_name} WHERE ip_phone_or_email = %s",
+                    $ip_phone_or_email
+                ),
+                ARRAY_A
+            );
+
+            if ($existing_record) {
+                $skipped_count++;
+                $errors[] = "Row " . ($i + 1) . ": Duplicate entry (ip_phone_or_email: {$ip_phone_or_email})";
+                continue;
+            }
+
+            // Insert the new blocked entry
+            $inserted = $wpdb->insert(
+                $this->table_name,
+                [
+                    'customer_id'       => $customer_id,
+                    'type'              => $type,
+                    'ip_phone_or_email' => $ip_phone_or_email,
+                    'created_at'        => $created_at,
+                    'updated_at'        => $updated_at,
+                ],
+                [
+                    '%d',
+                    '%s',
+                    '%s',
+                    '%s',
+                    '%s',
+                ]
+            );
+
+            if ($inserted) {
+                $imported_count++;
+                // Update customer data if customer_id is provided
+                if ($customer_id > 0) {
+                    $this->update_customer_data($customer_id);
+                }
+            } else {
+                $skipped_count++;
+                $errors[] = "Row " . ($i + 1) . ": Database insert failed";
+            }
+        }
+
+        return new WP_REST_Response([
+            'status'  => 'success',
+            'message' => "Import completed. {$imported_count} entries imported, {$skipped_count} skipped.",
+            'data'    => [
+                'imported_count' => $imported_count,
+                'skipped_count'  => $skipped_count,
+                'total_processed' => $imported_count + $skipped_count,
+                'errors'         => $errors,
+            ],
+        ], 200);
+    }
+
+    /**
+     * Escape CSV fields (handle commas and quotes)
+     */
+    private function escape_csv_field($field) {
+        if (strpos($field, ',') !== false || strpos($field, '"') !== false) {
+            return '"' . str_replace('"', '""', $field) . '"';
+        }
+        return $field;
+    }
+
+    /**
+     * Validate datetime format (YYYY-MM-DD HH:MM:SS)
+     */
+    private function is_valid_datetime($datetime) {
+        $pattern = '/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/';
+        if (!preg_match($pattern, $datetime)) {
+            return false;
+        }
+        
+        $date_parts = explode(' ', $datetime);
+        $date = strtotime($date_parts[0]);
+        $time = strtotime($date_parts[1]);
+        
+        return $date !== false && $time !== false;
     }     
 }

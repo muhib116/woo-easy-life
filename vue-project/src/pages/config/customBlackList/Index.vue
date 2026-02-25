@@ -13,14 +13,39 @@
                 Blacklisted Customers
             </h3>
 
-            <Button.Native
-                v-if="hasSelectedItems()"
-                @onClick="handleBulkDelete"
-                class="px-1 text-red-500"
-            >
-                <Icon name="PhX" size="20" />
-                Remove Selected Items
-            </Button.Native>
+            <div>
+                <div class="mr-4 flex items-center gap-3">
+                    <span class="text-sm text-gray-600">
+                        Total: {{ blackListData?.length || 0 }}
+                    </span>
+                    
+                </div>
+                <div class="flex gap-2 items-center">
+                    <Button.Native
+                        v-if="blackListData?.length"
+                        @onClick="handleExport"
+                        class="px-3 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors text-sm font-medium"
+                    >
+                        <Icon name="PhDownload" size="16" class="mr-1" />
+                        Export
+                    </Button.Native>
+                    <Button.Native
+                        @onClick="handleImport"
+                        class="px-3 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition-colors text-sm font-medium"
+                    >
+                        <Icon name="PhUpload" size="16" class="mr-1" />
+                        Import
+                    </Button.Native>
+                    <Button.Native
+                        v-if="hasSelectedItems()"
+                        @onClick="handleBulkDelete"
+                        class="px-3 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors text-sm font-medium"
+                    >
+                        <Icon name="PhX" size="16" class="mr-1" />
+                        Remove Selected Items
+                    </Button.Native>
+                </div>
+            </div>
         </div>
 
 
@@ -77,7 +102,9 @@
         alertMessage,
         handleBulkDelete,
         toggleSelectAll,
-        hasSelectedItems
+        hasSelectedItems,
+        handleExport,
+        handleImport
     } = _useBlackList
 
     provide('useBlackList', _useBlackList)

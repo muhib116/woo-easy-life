@@ -260,6 +260,18 @@ export const deleteBlockListData = async (id: string | number) => {
   const { data } = await axios.delete(`${localApiBaseURL}/block-list/${id}`);
   return data;
 };
+
+export const exportBlockListData = async () => {
+  const { data } = await axios.get(`${localApiBaseURL}/block-list/export`);
+  return data;
+};
+
+export const importBlockListData = async (csvContent: string) => {
+  const { data } = await axios.post(`${localApiBaseURL}/block-list/import`, {
+    csv_content: csvContent,
+  });
+  return data;
+};
 // block list CRUD end
 
 // sms history CRUD start
@@ -296,34 +308,34 @@ export const getProducts = async (searchKey?: string) => {
 // Add this function to your existing API file
 
 export const getProduct = async (productId: number) => {
-    try {
-        const { data } = await axios.get(`${localApiBaseURL}/products/${productId}`);
-        
-        // Check if the response has the expected structure
-        if (data && data.status === 'success' && data.data) {
-            return data.data; // Return only the product data
-        }
-        
-        // If response doesn't have expected structure, return null
-        if (data && data.status === 'error') {
-            console.warn(`Product ${productId} not found:`, data.message);
-            return null;
-        }
-        
-        return data;
-    } catch (error: any) {
-        // Handle 404 specifically
-        if (error.response?.status === 404) {
-            console.warn(`Product ${productId} not found (404)`);
-            return null;
-        }
-        
-        // Handle other errors
-        console.error(`Error fetching product ${productId}:`, error.response?.data?.message || error.message);
-        
-        // Return null instead of throwing to allow graceful handling
-        return null;
+  try {
+    const { data } = await axios.get(`${localApiBaseURL}/products/${productId}`);
+
+    // Check if the response has the expected structure
+    if (data && data.status === 'success' && data.data) {
+      return data.data; // Return only the product data
     }
+
+    // If response doesn't have expected structure, return null
+    if (data && data.status === 'error') {
+      console.warn(`Product ${productId} not found:`, data.message);
+      return null;
+    }
+
+    return data;
+  } catch (error: any) {
+    // Handle 404 specifically
+    if (error.response?.status === 404) {
+      console.warn(`Product ${productId} not found (404)`);
+      return null;
+    }
+
+    // Handle other errors
+    console.error(`Error fetching product ${productId}:`, error.response?.data?.message || error.message);
+
+    // Return null instead of throwing to allow graceful handling
+    return null;
+  }
 };
 
 export const createOrder = async (payload) => {

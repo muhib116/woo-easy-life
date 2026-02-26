@@ -155,6 +155,18 @@
                 >
                     📞 {{ order.billing_address.phone }}
                 </a>
+
+                <Button.Native
+                    class="flex items-center gap-1 text-black hover:text-green-700"
+                    title="Copy phone number"
+                    @click="copyPhoneNumber(order?.billing_address?.phone)"
+                >
+                    <Icon
+                        name="PhCopy"
+                        size="20"
+                    />
+                </Button.Native>
+
                 <Whatsapp
                     :phone_number="order.billing_address.phone"
                 />
@@ -329,6 +341,7 @@
     import { Whatsapp, CourierEntry } from '@/components';
     import QuickOrderStatusChange from '@/pages/orders/fragments/fragments/data/QuickOrderStatusChange.vue'
     import CustomFieldData from '../data/CustomFieldData.vue'
+    import { useOrders } from '@/pages/orders/useOrders'
 
     // allow the full order object to be passed through without strict structural typing
     const props = defineProps<{
@@ -374,6 +387,8 @@
     const deliveryProbability = computed(() => {
         return getDeliveryProbability(props.order)
     })
+
+    const { copyPhoneNumber } = useOrders()
 </script>
 
 <style>

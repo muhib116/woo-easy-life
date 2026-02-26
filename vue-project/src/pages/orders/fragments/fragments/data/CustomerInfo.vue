@@ -70,6 +70,18 @@
             <a :href="`tel:${order?.billing_address?.phone}`" class="flex gap-1 items-center text-orange-500 underline">
                 📞 {{ order?.billing_address?.phone }}
             </a>
+
+            <Button.Native
+                class="flex items-center gap-1 text-black hover:text-green-700"
+                title="Copy phone number"
+                @click="copyPhoneNumber(order?.billing_address?.phone)"
+            >
+                <Icon
+                    name="PhCopy"
+                    size="20"
+                />
+            </Button.Native>
+
             <Whatsapp
                 :phone_number="order?.billing_address?.phone"
             />
@@ -147,8 +159,11 @@
     import BlockAllTogether from '@/pages/orders/fragments/fragments/data/BlockAllTogether.vue'
     import GeoLocation from '../GeoLocation.vue';
     import CustomFieldData from './CustomFieldData.vue'
+    import { useOrders } from '@/pages/orders/useOrders'
     
     const props = defineProps({
         order: Object
     })
+
+    const { copyPhoneNumber } = useOrders()
 </script>

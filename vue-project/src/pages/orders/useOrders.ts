@@ -803,7 +803,31 @@ export const useOrders = () => {
     };
 
     printNextOrder();
+  }
 
+  const copyPhoneNumber = (phone: string) => {
+      if (phone) {
+          navigator.clipboard.writeText(phone)
+              .then(() => {
+                  showNotification({ 
+                      type: 'success', 
+                      message: 'Phone number copied to clipboard!' 
+                  });
+              })
+              .catch(() => {
+                  // Fallback for browsers that don't support clipboard API
+                  const textarea = document.createElement('textarea');
+                  textarea.value = phone;
+                  document.body.appendChild(textarea);
+                  textarea.select();
+                  document.execCommand('copy');
+                  document.body.removeChild(textarea);
+                  showNotification({ 
+                      type: 'success', 
+                      message: 'Phone number copied to clipboard!' 
+                  });
+              });
+      }
   }
 
   watch(() => selectedOrders, (newVal) => { selectAll.value = selectedOrders.value.size === orders.value.length; }, { deep: true });
@@ -864,6 +888,7 @@ export const useOrders = () => {
     loadPaymentMethods,
     handleLabelPrint,
     updateConsignmentIdInOrder,
+    copyPhoneNumber,
     paymentMethods,
     selectedDspFilter,
     dspFilterOptions,

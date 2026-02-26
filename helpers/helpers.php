@@ -20,21 +20,23 @@ function get_customer_ip() {
 
     $remote_addr = isset($_SERVER['REMOTE_ADDR']) ? sanitize_text_field(wp_unslash($_SERVER['REMOTE_ADDR'])) : '';
 
-    // Helper to check if IP is in trusted list (supports CIDR)
-    function ip_in_trusted($ip, $trusted_proxies) {
-        foreach ($trusted_proxies as $proxy) {
-            if (strpos($proxy, '/') !== false) {
-                // CIDR notation
-                list($subnet, $bits) = explode('/', $proxy);
-                $ip_bin = ip2long($ip);
-                $subnet_bin = ip2long($subnet);
-                $mask = -1 << (32 - $bits);
-                if (($ip_bin & $mask) == ($subnet_bin & $mask)) return true;
-            } else {
-                if ($ip === $proxy) return true;
+    if(!function_exists('ip_in_trusted')) {
+        // Helper to check if IP is in trusted list (supports CIDR)
+        function ip_in_trusted($ip, $trusted_proxies) {
+            foreach ($trusted_proxies as $proxy) {
+                if (strpos($proxy, '/') !== false) {
+                    // CIDR notation
+                    list($subnet, $bits) = explode('/', $proxy);
+                    $ip_bin = ip2long($ip);
+                    $subnet_bin = ip2long($subnet);
+                    $mask = -1 << (32 - $bits);
+                    if (($ip_bin & $mask) == ($subnet_bin & $mask)) return true;
+                } else {
+                    if ($ip === $proxy) return true;
+                }
             }
+            return false;
         }
-        return false;
     }
 
     // If request is from a trusted proxy, check headers

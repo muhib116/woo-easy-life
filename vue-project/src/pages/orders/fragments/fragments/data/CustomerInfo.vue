@@ -19,6 +19,11 @@
             >
                 {{ order?.order_source }}
             </span>
+            <span 
+                :title="order?.created_via?.toLowerCase() == 'checkout' ? 'Checkout (Original)' : 'Store Api (Fake)'"
+            >
+                {{ order?.created_via?.toLowerCase() == 'checkout' ? '✅' : '❌' }}
+            </span>
 
             <QuickOrderStatusChange
                 :order="order"

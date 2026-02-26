@@ -36,6 +36,11 @@
                     >
                         {{ order.order_source }}
                     </span>
+                    <span 
+                        :title="order?.created_via?.toLowerCase() == 'checkout' ? 'Checkout (Original)' : 'Store Api (Fake)'"
+                    >
+                        {{ order?.created_via?.toLowerCase() == 'checkout' ? '✅' : '❌' }}
+                    </span>
                 </div>
                 
                 <div class="flex items-center gap-4">

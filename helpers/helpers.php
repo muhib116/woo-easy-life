@@ -440,14 +440,14 @@ function get_block_data_by_type($value, $type = 'phone_number') {
     if ($type === 'phone_number') {
         // For phone numbers, apply REPLACE operations to normalize stored format
         $query = $wpdb->prepare(
-            "SELECT 1 FROM {$table_name} WHERE type = %s AND REPLACE(REPLACE(REPLACE(ip_phone_or_email, '+880', '0'), '-', ''), ' ', '') = %s LIMIT 1",
+            "SELECT 1 FROM {$table_name} WHERE type = %s AND REPLACE(REPLACE(REPLACE(content, '+880', '0'), '-', ''), ' ', '') = %s LIMIT 1",
             $type,
             $value
         );
     } else {
         // For other types (ip, email, device_token), do direct comparison
         $query = $wpdb->prepare(
-            "SELECT 1 FROM {$table_name} WHERE type = %s AND ip_phone_or_email = %s LIMIT 1",
+            "SELECT 1 FROM {$table_name} WHERE type = %s AND content = %s LIMIT 1",
             $type,
             $value
         );

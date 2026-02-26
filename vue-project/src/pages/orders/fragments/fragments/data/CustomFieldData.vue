@@ -1,6 +1,6 @@
 <template>
     <div
-        v-if="!order?.customFieldData"
+        v-if="order?.customFieldData"
         class="relative"
         v-click-outside="() => toggleCartFlowFieldsData ? toggleCartFlowFieldsData = false : null"
     >
@@ -20,7 +20,7 @@
             <div class="divide-y">
                 <div
                     class="flex items-center justify-between gap-2 py-1"
-                    v-for="(value, key) in order?.customFieldData || {phone: 'N/A'}" 
+                    v-for="(value, key) in order?.customFieldData" 
                     :key="key"
                 >
                     <span class="flex-1 text-sm">{{ value }}</span>

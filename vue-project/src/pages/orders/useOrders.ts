@@ -279,7 +279,11 @@ export const useOrders = () => {
       alert("Please select at least one item.");
       return { success: false, errors: ['No order selected'] };
     }
-    const payload = [...selectedOrders.value].map((item) => ({ type: "phone_number", ip_phone_email_or_device: item?.billing_address?.phone }));
+    const payload = [...selectedOrders.value].map((item) => ({
+      type: "phone_number",
+      content: item?.billing_address?.phone,
+      customer_id: item?.id || '' // Using order id as customer id for now, can be changed if needed.
+    }));
     const errors: string[] = [];
     let blockCount = 0;
     try {
@@ -315,7 +319,11 @@ export const useOrders = () => {
         showNotification({ type: 'warning', message: 'Email is missing.' });
         return;
       } else {
-        return { type: "email", ip_phone_email_or_device: item?.billing_address?.email };
+        return { 
+          type: "email", 
+          content: item?.billing_address?.email,
+          customer_id: item?.id || '' // Using order id as customer id for now, can be changed if needed.
+        };
       }
     }).filter(Boolean);
     const errors: string[] = [];
@@ -353,7 +361,11 @@ export const useOrders = () => {
         showNotification({ type: 'warning', message: 'Device token is missing. May be custom order.' });
         return;
       } else {
-        return { type: "device_token", ip_phone_email_or_device: item?.customer_device_token }
+        return { 
+          type: "device_token", 
+          content: item?.customer_device_token,
+          customer_id: item?.id || '' // Using order id as customer id for now, can be changed if needed.
+        };
       }
     }).filter(Boolean);
 
@@ -391,7 +403,11 @@ export const useOrders = () => {
       alert("Please select at least one item.");
       return { success: false, errors: ['No order selected'] };
     }
-    const payload = [...selectedOrders.value].map((item) => ({ type: "ip", ip_phone_email_or_device: item?.customer_ip }));
+    const payload = [...selectedOrders.value].map((item) => ({
+      customer_id: item?.id || '', // item.id = order id, not customer id. So using order id as customer id for now, can be changed if needed.
+      type: "ip", 
+      content: item?.customer_ip
+    }));
     const errors: string[] = [];
     let blockCount = 0;
     try {

@@ -13,7 +13,7 @@
     <Table.Td class="capitalize">
       {{ index + 1 }}
     </Table.Td>
-    <Table.Td>{{ item.ip_phone_or_email }}</Table.Td>
+    <Table.Td>{{ item?.content }}</Table.Td>
     <Table.Td class="capitalize">
       {{ item.type.replaceAll("_", " ") || "Device Token" }}
     </Table.Td>
@@ -41,9 +41,9 @@ defineProps<{
   index: number;
   item: {
     id: number | string;
-    ip_phone_or_email: string;
     type: string;
     created_at: string;
+    content: string;
     isSelected?: boolean;
   };
 }>();

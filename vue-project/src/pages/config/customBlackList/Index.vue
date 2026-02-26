@@ -65,7 +65,7 @@
                     </label>
                 </Table.Th>
                 <Table.Th>#sl</Table.Th>
-                <Table.Th>Phone/Email/Ip/Device</Table.Th>
+                <Table.Th>Content</Table.Th>
                 <Table.Th>Type</Table.Th>
                 <Table.Th>Blocked At</Table.Th>
                 <Table.Th class="text-right">Action</Table.Th>

@@ -222,12 +222,58 @@ POST   /wp-json/wooeasylife/v1/save-order-notes
 }
 ```
 
-### Fraud Detection
+### Fraud Detection & Block List
 ```
 POST   /wp-json/wooeasylife/v1/check-fraud-customer
 GET    /wp-json/wooeasylife/v1/customer-data
-POST   /wp-json/wooeasylife/v1/block-entry
+GET    /wp-json/wooeasylife/v1/block-list
+POST   /wp-json/wooeasylife/v1/block-list
+POST   /wp-json/wooeasylife/v1/bulk-entry
+GET    /wp-json/wooeasylife/v1/block-list/{id}
+PUT    /wp-json/wooeasylife/v1/block-list/{id}
+DELETE /wp-json/wooeasylife/v1/block-list/{id}
+GET    /wp-json/wooeasylife/v1/block-list/export
+POST   /wp-json/wooeasylife/v1/block-list/import
 ```
+
+**Block List Entry Structure**:
+```json
+{
+  "id": 1,
+  "customer_id": 0,
+  "type": "email",
+  "content": "fraud@example.com",
+  "created_at": "2026-02-26 03:52:14",
+  "updated_at": "2026-02-26 03:52:14"
+}
+```
+
+**Bulk Entry Request Format**:
+```json
+[
+  {
+    "type": "email",
+    "content": "fraud@example.com",
+    "customer_id": 0
+  },
+  {
+    "type": "phone_number",
+    "content": "+1234567890",
+    "customer_id": 0
+  },
+  {
+    "type": "ip",
+    "content": "192.168.1.1",
+    "customer_id": 0
+  }
+]
+```
+
+**Supported Block Types**:
+- `email` - Email addresses
+- `phone_number` - Phone numbers
+- `ip` - IP addresses
+- `device_token` - Device tokens
 
 ### Courier Services
 ```

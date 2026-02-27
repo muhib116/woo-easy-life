@@ -254,6 +254,7 @@ export const ip_phone_email_or_device_block_bulk_entry = async (
 export const getBlockListData = async (payload?: {
   page?: number;
   per_page?: number;
+  search?: string;
 }) => {
   const { data } = await axios.get(`${localApiBaseURL}/block-list`, {
     params: payload || { page: 1, per_page: 10 },

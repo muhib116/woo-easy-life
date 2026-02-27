@@ -13,12 +13,18 @@
                 Blacklisted Data
             </h3>
 
-            <div>
+            <div class="flex flex-col md:flex-row md:items-center gap-4">
                 <div class="mr-4 flex items-center gap-3">
+                    <input
+                        v-model="searchQuery"
+                        @input="handleSearch(searchQuery)"
+                        type="text"
+                        placeholder="Search content..."
+                        class="px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
                     <span class="text-sm text-gray-600">
                         Total: {{ totalEntries }}
                     </span>
-                    
                 </div>
                 <div class="flex gap-2 items-center">
                     <Button.Native
@@ -131,7 +137,7 @@
 <script setup>
     import { Table, MessageBox, Loader, Card, Button, Icon } from '@/components'
     import { useBlackList } from './useBlackList'
-    import { provide, ref } from 'vue'
+    import { provide } from 'vue'
     import TableTrow from './fragment/TableRow.vue'
 
     const _useBlackList = useBlackList()
@@ -144,6 +150,7 @@
         perPage,
         totalEntries,
         totalPages,
+        searchQuery,
         handleBulkDelete,
         toggleSelectAll,
         hasSelectedItems,
@@ -151,7 +158,8 @@
         handleImport,
         nextPage,
         prevPage,
-        changePerPage
+        changePerPage,
+        handleSearch
     } = _useBlackList
 
     provide('useBlackList', _useBlackList)

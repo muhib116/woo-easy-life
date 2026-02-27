@@ -77,7 +77,7 @@ class BlockListAPI extends WP_REST_Controller {
     }
 
     /**
-     * Get all blocked entries with pagination support
+     * Get all blocked entries with pagination support and search
      */
     public function get_all_blocked_entries(WP_REST_Request $request) {
         global $wpdb;
@@ -85,22 +85,34 @@ class BlockListAPI extends WP_REST_Controller {
         // Get pagination parameters
         $page = $request->get_param('page') ? intval($request->get_param('page')) : 1;
         $per_page = $request->get_param('per_page') ? intval($request->get_param('per_page')) : 10;
+        $search = $request->get_param('search') ? sanitize_text_field($request->get_param('search')) : '';
         
         // Validate pagination parameters
         if ($page < 1) $page = 1;
         if ($per_page < 1) $per_page = 10;
-        if ($per_page > 100) $per_page = 100; // Max 100 items per page
 
         // Calculate offset
         $offset = ($page - 1) * $per_page;
 
-        // Get total count
-        $total = $wpdb->get_var("SELECT COUNT(*) FROM {$this->table_name}");
+        // Build query with optional search filter
+        $where_clause = '';
+        if (!empty($search)) {
+            $search_term = '%' . $wpdb->esc_like($search) . '%';
+            $where_clause = $wpdb->prepare(
+                "WHERE content LIKE %s OR type LIKE %s",
+                $search_term,
+                $search_term
+            );
+        }
+
+        // Get total count with search filter
+        $total = $wpdb->get_var("SELECT COUNT(*) FROM {$this->table_name} {$where_clause}");
 
         // Get paginated results
+        $query = "SELECT * FROM {$this->table_name} {$where_clause} ORDER BY id DESC LIMIT %d OFFSET %d";
         $results = $wpdb->get_results(
             $wpdb->prepare(
-                "SELECT * FROM {$this->table_name} ORDER BY id DESC LIMIT %d OFFSET %d",
+                $query,
                 $per_page,
                 $offset
             ),

@@ -11,6 +11,7 @@ export const useBlackList = () => {
         type: ''
     })
     const blackListData = ref<any[]>([])
+    const searchQuery = ref('')
 
     // Pagination state
     const currentPage = ref(1)
@@ -18,12 +19,13 @@ export const useBlackList = () => {
     const totalEntries = ref(0)
     const totalPages = ref(0)
 
-    const loadBlackListData = async (page: number = 1, itemsPerPage: number = 20) => {
+    const loadBlackListData = async (page: number = 1, itemsPerPage: number = 20, search: string = '') => {
         try {
             isLoading.value = true
             const response = await getBlockListData({
                 page,
-                per_page: itemsPerPage
+                per_page: itemsPerPage,
+                search: search || undefined
             })
             blackListData.value = response.data || []
 
@@ -101,7 +103,7 @@ export const useBlackList = () => {
 
     const goToPage = async (page: number) => {
         if (page >= 1 && page <= totalPages.value) {
-            await loadBlackListData(page, perPage.value)
+            await loadBlackListData(page, perPage.value, searchQuery.value)
         }
     }
 
@@ -119,8 +121,13 @@ export const useBlackList = () => {
 
     const changePerPage = async (newPerPage: number) => {
         if (newPerPage >= 1 && newPerPage <= 100) {
-            await loadBlackListData(1, newPerPage)
+            await loadBlackListData(1, newPerPage, searchQuery.value)
         }
+    }
+
+    const handleSearch = async (query: string) => {
+        searchQuery.value = query
+        await loadBlackListData(1, perPage.value, query)
     }
 
     const handleExport = async () => {
@@ -232,6 +239,7 @@ export const useBlackList = () => {
         perPage,
         totalEntries,
         totalPages,
+        searchQuery,
         removeFromBlacklist,
         handleBulkDelete,
         toggleSelectAll,
@@ -242,6 +250,7 @@ export const useBlackList = () => {
         nextPage,
         prevPage,
         changePerPage,
+        handleSearch,
         loadBlackListData
     }
 }

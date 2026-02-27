@@ -74,7 +74,7 @@
             <Button.Native
                 class="flex items-center gap-1 text-black hover:text-green-700"
                 title="Copy phone number"
-                @click="copyPhoneNumber(order?.billing_address?.phone)"
+                @click="copyToClipboard(order?.billing_address?.phone, 'Phone number')"
             >
                 <Icon
                     name="PhCopy"
@@ -110,42 +110,52 @@
             <span
                 v-if="order?.ip_block_listed"
                 class="!py-0 !text-[10px] flex items-center text-[#f93926]"
+                title="IP Blacklisted"
             >
                 <Icon
                     name="PhCellTower"
                     size="12"
                 />
-                Ip blocked
             </span>
             <span
                 v-if="order?.phone_block_listed"
                 class="!py-0 !text-[10px] flex items-center text-[#e82661]"
+                title="Phone Blacklisted"
             >
                 <Icon
                     name="PhSimCard"
                     size="12"
                 />
-                Phone blocked
             </span>
             <span
                 v-if="order?.email_block_listed"
                 class="!py-0 !text-[10px] flex items-center text-[#444444]"
+                title="Email Blacklisted"
             >
                 <Icon
                     name="PhEnvelopeSimple"
                     size="12"
                 />
-                Email blocked
             </span>
             <span
                 v-if="order?.device_block_listed"
-                class="!py-0 !text-[10px] flex items-center text-[#e82661]"
+                class="!text-[10px] flex items-center gap-1 text-[#e82661] border px-1 py-1 rounded shadow"
+                title="Device Blacklisted"
             >
                 <Icon
                     name="PhDeviceMobileSlash"
                     size="12"
                 />
-                Device blocked
+                <Button.Native
+                    class="flex items-center text-blue-500 hover:text-blue-700"
+                    title="Copy device token"
+                    @click="copyToClipboard(order?.customer_device_token, 'Device token')"
+                >
+                    <Icon
+                        name="PhCopy"
+                        size="12"
+                    />
+                </Button.Native>
             </span>
         </div>
     </div>
@@ -165,5 +175,5 @@
         order: Object
     })
 
-    const { copyPhoneNumber } = useOrders()
+    const { copyToClipboard } = useOrders()
 </script>

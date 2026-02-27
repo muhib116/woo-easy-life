@@ -159,7 +159,7 @@
                 <Button.Native
                     class="flex items-center gap-1 text-black hover:text-green-700"
                     title="Copy phone number"
-                    @click="copyPhoneNumber(order?.billing_address?.phone)"
+                    @click="copyToClipboard(order?.billing_address?.phone, 'Phone number')"
                 >
                     <Icon
                         name="PhCopy"
@@ -388,7 +388,7 @@
         return getDeliveryProbability(props.order)
     })
 
-    const { copyPhoneNumber } = useOrders()
+    const { copyToClipboard } = useOrders()
 </script>
 
 <style>

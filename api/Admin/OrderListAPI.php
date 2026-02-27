@@ -349,32 +349,32 @@ class OrderListAPI
     
             $ip_block_listed = get_block_data_by_type($customer_ip, 'ip');
             $device_block_listed = get_block_data_by_type($customer_device_token, 'device_token');
-            $phone_block_listed = get_block_data_by_type(normalize_phone_number($_billing_phone), 'phone_number');
-            $email_block_listed = get_block_data_by_type($_billing_email, 'email');
-            $discount_total = $order->get_discount_total(); // Total discount amount
-            $discount_tax = $order->get_discount_tax(); // Discount tax, if any
-            $applied_coupons = $order->get_coupon_codes(); // Array of coupon codes
-            $order_notes = get_order_notes($order);
-            $created_via = $order->get_meta('_created_via', true);
-            $courier_data = get_courier_data_from_order($order);
-            $is_repeat_customer = is_repeat_customer($order);
+            $phone_block_listed  = get_block_data_by_type(normalize_phone_number($_billing_phone), 'phone_number');
+            $email_block_listed  = get_block_data_by_type($_billing_email, 'email');
+            $discount_total      = $order->get_discount_total(); // Total discount amount
+            $discount_tax        = $order->get_discount_tax(); // Discount tax, if any
+            $applied_coupons     = $order->get_coupon_codes(); // Array of coupon codes
+            $order_notes         = get_order_notes($order);
+            $created_via         = $order->get_meta('_created_via', true);
+            $courier_data        = get_courier_data_from_order($order);
+            $is_repeat_customer  = is_repeat_customer($order);
             $customer_custom_data = $customerHandler->handle_customer_data(null, $order);
-            $parcel_weight = get_order_total_weight($order);
-            $referrer_url = get_post_meta($order_id, '_referrer_url', true);
+            $parcel_weight        = get_order_total_weight($order);
+            $referrer_url         = get_post_meta($order_id, '_referrer_url', true);
             //get order note of cod modification
             $cod_modification_note = get_order_cod_modification_note($order);
-            $geo_info = $order->get_meta('_wel_geo_info', true);
-            $customer_latitude = $order->get_meta('_wel_customer_latitude', true);
-            $customer_longitude = $order->get_meta('_wel_customer_longitude', true);
+            $geo_info             = $order->get_meta('_wel_geo_info', true);
+            $customer_latitude    = $order->get_meta('_wel_customer_latitude', true);
+            $customer_longitude   = $order->get_meta('_wel_customer_longitude', true);
+            $customFieldData      = get_only_cartflows_custom_fields_data($order->get_id());
 
-            $customFieldData = get_only_cartflows_custom_fields_data($order->get_id());
-            
+
             $data[] = [
                 'id'            => $order->get_id(),
                 'status'        => $order->get_status(),
                 'sub_total'     => $order->get_subtotal(),
                 'total'         => $order->get_total(), //after cutting discount
-                'referrer_url'    => $referrer_url,
+                'referrer_url'  => $referrer_url,
                 // 👉 get_total() কী কী অন্তর্ভুক্ত করে?
                 // ✅ পণ্যের মূল্য (Product Price)
                 // ✅ শিপিং চার্জ (Shipping Cost)

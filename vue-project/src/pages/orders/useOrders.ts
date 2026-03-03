@@ -75,6 +75,7 @@ export const useOrders = () => {
   const toggleNewOrder = ref(false);
   const wooCommerceStatuses = ref([]);
   const selectedStatus = ref(null);
+  const isInitialized = ref(false); // Flag to prevent duplicate initialization
   const { userData, loadUserData } = inject('useServiceProvider');
 
   const courierStatusInfo = {
@@ -112,6 +113,10 @@ export const useOrders = () => {
   ]);
 
   const loadPaymentMethods = async () => {
+    // Skip if already loaded
+    if (paymentMethods.value && paymentMethods.value.length > 0) {
+      return;
+    }
     try {
       const { data } = await getPaymentMethods();
       paymentMethods.value = data;
@@ -177,6 +182,10 @@ export const useOrders = () => {
   }
 
   const loadShippingMethods = async () => {
+    // Skip if already loaded
+    if (shippingMethods.value && shippingMethods.value.length > 0) {
+      return;
+    }
     const { data: _shippingMethods } = await getShippingMethods();
     shippingMethods.value = _shippingMethods
   }
@@ -249,6 +258,10 @@ export const useOrders = () => {
 
   const loadAllStatuses = async () => {
     try {
+      // Skip if already loaded
+      if (wooCommerceStatuses.value && wooCommerceStatuses.value.length > 0) {
+        return;
+      }
       isLoading.value = true;
       const { data } = await getWoocomerceStatuses();
       wooCommerceStatuses.value = data;
@@ -258,6 +271,10 @@ export const useOrders = () => {
   };
 
   const loadOrderStatusList = async () => {
+    // Skip if already loaded
+    if (orderStatusWithCounts.value && orderStatusWithCounts.value.length > 0) {
+      return;
+    }
     isLoading.value = true;
     const { data } = await getOrderStatusListWithCounts();
     orderStatusWithCounts.value = data;
@@ -830,9 +847,11 @@ export const useOrders = () => {
       }
   }
 
-  watch(() => selectedOrders, (newVal) => { selectAll.value = selectedOrders.value.size === orders.value.length; }, { deep: true });
+  const initialLoad = async () => {
+    // Prevent duplicate initialization in strict mode or component re-mounts
+    if (isInitialized.value) return;
+    isInitialized.value = true;
 
-  onMounted(async () => {
     if (route.query.status) {
       orderFilter.value.status = String(route.query.status);
     }
@@ -841,7 +860,9 @@ export const useOrders = () => {
     await loadShippingMethods();
     await loadPaymentMethods();
     getOrders();
-  });
+  }
+
+  watch(() => selectedOrders, (newVal) => { selectAll.value = selectedOrders.value.size === orders.value.length; }, { deep: true });
 
   return {
     orders,
@@ -856,24 +877,32 @@ export const useOrders = () => {
     toggleNewOrder,
     selectedStatus,
     selectedOrders,
+    paymentMethods,
+    filteredOrders,
     shippingMethods,
+    dspFilterOptions,
     orderListLoading,
+    selectedDspFilter,
     courierStatusInfo,
     isShippingEditing,
     wooCommerceStatuses,
     orderStatusWithCounts,
     getOrders,
     markAsDone,
-    markAsFollowing,
+    initialLoad,
     handleFilter,
     handleIPBlock,
     setActiveOrder,
-    setSelectedOrder,
+    markAsFollowing,
     toggleSelectAll,
+    copyToClipboard,
+    setSelectedOrder,
     handleFraudCheck,
     handleEmailBlock,
+    handleLabelPrint,
     handleDeviceBlock,
     handleUpdateOrder,
+    loadPaymentMethods,
     handleStatusChange,
     debouncedGetOrders,
     handleCourierEntry,
@@ -885,13 +914,6 @@ export const useOrders = () => {
     handleUpdateShippingMethod,
     include_balance_cut_failed_new_orders,
     include_past_new_orders_thats_not_handled_by_wel_plugin,
-    loadPaymentMethods,
-    handleLabelPrint,
     updateConsignmentIdInOrder,
-    copyToClipboard,
-    paymentMethods,
-    selectedDspFilter,
-    dspFilterOptions,
-    filteredOrders
   };
 };

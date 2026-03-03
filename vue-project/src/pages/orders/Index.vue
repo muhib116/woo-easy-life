@@ -13,8 +13,9 @@
     </Layout>
 </template>
 <script setup lang="ts">
+    import { onMounted } from 'vue'
     import { Layout, Container } from '@layout'
-    import { Card } from '@components'
+    import { Card } from '@/components'
     import { useOrders } from './useOrders'
     import { provide } from 'vue'
     import OrderList from './fragments/OrderList.vue'
@@ -22,7 +23,11 @@
     import PrintLabels from './fragments/fragments/PrintLabels.vue'
 
     const _useOrders = useOrders()
-    const { showInvoices } = _useOrders
+    const { showInvoices, initialLoad } = _useOrders
 
     provide('useOrders', _useOrders)
+
+    onMounted(() => {
+        initialLoad()
+    })
 </script>
